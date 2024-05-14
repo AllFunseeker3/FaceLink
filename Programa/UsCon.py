@@ -72,6 +72,9 @@ class Inicio:
         
         mainloop()
 
+
+
+
         
 
 Inicio()
