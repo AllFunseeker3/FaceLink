@@ -5,13 +5,14 @@ ApellidoP ,as string (30) ,not null
 ApellidoM as String (30) ,not null
 FechaNacimiento ,as date ,not null
 IDHorario ,as int
-FotoRuta ,as varchar(100)
+
 
 ,Tabla Relacion_EmpleadosDocumentos
 ,TablaRelacional
 IDRelacion ,as int ,as primary key
 IDDocumentos ,as int,
 IDEmpleados ,as int
+FotoRuta ,as varchar(100)
 
 ,Tabla Documentos
 IDDocumentos ,as int
