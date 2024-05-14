@@ -22,22 +22,22 @@ class Inicio:
         
         #------------------#
         self.titulo=Label(self.frame_sup,
-                          text="Ingreso",
-                          font=("Poppins",20,"bold"),
-                          bg=fondo)
+                        text="Ingreso",
+                        font=("Poppins",20,"bold"),
+                        bg=fondo)
         self.titulo.pack(side="top",pady=20)
         
         self.label_usuario = Label(self.frame_inf,
-                                   text="Usuario",
-                                   font=("Poppins", 10, "bold"),
-                                   bg=fondo,
-                                   fg="black")
+                                text="Usuario",
+                                font=("Poppins", 10, "bold"),
+                                bg=fondo,
+                                fg="black")
         self.label_usuario.grid(row=0, column=0,padx=1, sticky="e")
         
         self.BoxUsuario=Entry(self.frame_inf,
-                              bd=0,
-                              width=25,
-                              font=("Poppins", 10))
+                            bd=0,
+                            width=25,
+                            font=("Poppins", 10))
         self.BoxUsuario.grid(row=1, column=0,columnspan=3,padx=10, sticky="s")
         
         
