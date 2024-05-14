@@ -5,7 +5,7 @@ class Inicio:
     def __init__(self):
         self.ventana=Tk()
         self.ventana.geometry("400x500")
-        self.ventana.title("Inicio")
+        self.ventana.title("Logger")
         
         fondo="#FFF7F1"
         
