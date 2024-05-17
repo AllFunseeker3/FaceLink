@@ -1,13 +1,13 @@
 from tkinter import *
 from tkinter import ttk
-
+from PIL import Image, ImageTk
 class Inicio:
     def __init__(self):
         self.ventana=Tk()
         self.ventana.geometry("500x600")
         self.ventana.title("Inicio")
         
-        fondo="#91C8E4"
+        fondo="#F6F4EB"
         
         self.frame_sup=Frame(self.ventana)
         self.frame_sup.configure(bg=fondo)
@@ -23,6 +23,14 @@ class Inicio:
                         font=("Poppins",20,"bold"),
                         bg=fondo)
         self.titulo.pack(side="top",pady=20)
+        
+        
+        self.img = Image.open("Imagenes/FaceLink.png")
+        self.img=self.img.resize((150,165))
+        self.render=ImageTk.PhotoImage(self.img)
+        self.fondo=Label(self.frame_sup, image=self.render, bg=fondo)
+        self.fondo.pack(expand=True, fill="both", side="top")
+        
         
         self.label_usuario = Label(self.frame_inf,
                                 text="Usuario",
