@@ -7,6 +7,8 @@ class Inicio:
         self.ventana.geometry("400x500")
         self.ventana.title("Inicio")
         
+        
+        
         mainloop()
 
         
