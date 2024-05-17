@@ -4,18 +4,31 @@ Nombre ,as string (30) ,not null
 ApellidoP ,as string (30) ,not null
 ApellidoM as String (30) ,not null
 FechaNacimiento ,as date ,not null
+IDHorario ,as int
+
+
 ,Tabla Relacion_EmpleadosDocumentos
 ,TablaRelacional
 IDRelacion ,as int ,as primary key
 IDDocumentos ,as int,
 IDEmpleados ,as int
+FotoRuta ,as varchar(100)
+
 ,Tabla Documentos
 IDDocumentos ,as int
 Tipo ,as string (20)
 Ruta ,as String (100)
-,Tabla FechaHora
+
+,Tabla LOGFechaHora
 ,Será un LOG
 IDHorario ,as int
 IDEmpleados ,as int
 Fecha ,as date
 hora ,as TIME
+
+,Tabla Horarios
+IDHorario ,as int
+IDEmpleados, as int
+HoraEntrada ,as TIME
+HoraSalida , as TIME
+
