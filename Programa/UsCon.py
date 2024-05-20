@@ -1,7 +1,19 @@
 from tkinter import *
 from tkinter import ttk
 from PIL import Image, ImageTk
+from Principal import Principal
+
+
 class Inicio:
+    #--------------Funciones------------
+    def cerrar(self):
+        self.ventana.destroy()
+    
+    def abrir_ventana2(self):
+        self.ventana.withdraw()
+        Principal()
+    
+    #-----------------Ventanas----------
     def __init__(self):
         self.ventana=Tk()
         self.ventana.geometry("500x600")
@@ -30,7 +42,6 @@ class Inicio:
         self.render=ImageTk.PhotoImage(self.img)
         self.fondo=Label(self.frame_sup, image=self.render, bg=fondo)
         self.fondo.pack(expand=True, fill="both", side="top")
-        
         
         self.label_usuario = Label(self.frame_inf,
                                 text="Usuario",
@@ -64,22 +75,22 @@ class Inicio:
                                   text="Ingresar",
                                   width=7,
                                   height=0,
-                                  font=("Poppins",12))
+                                  font=("Poppins",12),
+                                  command=self.abrir_ventana2)
         self.botonIngresar.place(x=300,y=118,width=100,height=30)
         
         self.botonSalir=Button(self.frame_inf,
                                   text="Salir",
                                   width=7,
                                   height=0,
-                                  font=("Poppins",12))
+                                  font=("Poppins",12),
+                                  command=self.cerrar)
         self.botonSalir.place(x=90,y=118,width=100,height=30)
         
-        
         mainloop()
-
-
-
-
-
+        
+        
+if __name__ == "__main__":
+    Inicio()
 
 Inicio()
