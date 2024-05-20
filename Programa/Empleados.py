@@ -77,8 +77,31 @@ class Empleados:
          self.Tbregistros.heading("#0",text="Fecha", anchor="w")
          self.Tbregistros.heading("col1",text="Hora de ingreso", anchor="w")
          self.Tbregistros.heading("col2",text="Hora de salida", anchor="w")
-         self.Tbregistros.place(x=20,y=200, width=550,height=170)
+         self.Tbregistros.place(x=20,y=200, width=550,height=120)
          
+         self.BTRegresar=Button(self.ventana,
+                                text="Regresar",
+                                width=7,
+                                height=8,
+                                font=("Poppins",12)
+                                )
+         self.BTRegresar.place(x=20, y= 350,width=100 , height=30)
+         
+         self.BTEliminar=Button(self.ventana,
+                                text="Eliminar",
+                                width=7,
+                                height=8,
+                                font=("Poppins",12)
+                                )
+         self.BTEliminar.place(x=130, y= 350,width=100 , height=30)
+         
+         self.BTGestionar=Button(self.ventana,
+                                text="Gestionar",
+                                width=7,
+                                height=8,
+                                font=("Poppins",12)
+                                )
+         self.BTGestionar.place(x=240, y= 350,width=100 , height=30)
          mainloop()
          
 Empleados()
