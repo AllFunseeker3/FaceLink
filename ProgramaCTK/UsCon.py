@@ -1,5 +1,5 @@
 from customtkinter import *
-from PIL import Image   
+from PIL import Image,ImageTk   
 import os
 from tkinter import messagebox
 from CTkTable import CTkTable
@@ -73,11 +73,13 @@ class Principal:
             UsuCon()
     
     def Abrir(self):
-        self.ventana.quit()
-        self.ventana.destroy()
-        Empleados()
+        empleados_window = Empleados()
+        empleados_window.mainloop()
+
+        print("Hola")
         
     def __init__(self):
+
         self.ventana=CTk()
         self.ventana.title("Face-link")
         ancho_pantalla = self.ventana.winfo_screenwidth()
@@ -130,51 +132,148 @@ class Principal:
         
         self.ventana.mainloop()
         
-class Empleados():
-    def Cerrar(self):
-        self.ventana2.quit()
-        self.ventana2.destroy()
+class Empleados(CTkToplevel):
+    
+    def Eliminar(self):
+        self.Des=messagebox.askquestion("Eliminar?","Esta seguro que quieres eliminar a este empleado? Esta acción es irreversible")
+        if self.Des=="yes":
+            mensaje=messagebox.showinfo("Elminiado","Empleado eliminado")
+    
+    def Abrir(self):
+        cargarDoc_window=CargaDocs()
+        cargarDoc_window.mainloop()
+
     def __init__(self):
-        self.ventana2=CTk()
-        self.ventana2.title("Face-link")
-        ancho_pantalla = self.ventana2.winfo_screenwidth()
-        alto_pantalla = self.ventana2.winfo_screenheight()
+        super().__init__()
+        self.title("Face-link")
+        ancho_pantalla = self.winfo_screenwidth()
+        alto_pantalla = self.winfo_screenheight()
         ancho_ventana = 595
         alto_ventana = 404
         x_pos = (ancho_pantalla - ancho_ventana) // 2
         y_pos = (alto_pantalla - alto_ventana) // 2
-        self.ventana2.geometry(f"{ancho_ventana}x{alto_ventana}+{x_pos}+{y_pos}")
-        self.ventana2.resizable(0, 0)
+        self.geometry(f"{ancho_ventana}x{alto_ventana}+{x_pos}+{y_pos}")
+        self.resizable(0, 0)
         #self.ventana.propagate(0)
-        #self.ventana.overrideredirect(True)
-        self.ventana2._set_appearance_mode("light")
-        
+        #self.ventana.overrideredirect(True)  
         ruta_actual = os.getcwd()
         # Reemplaza las diagonales inversas por diagonales normales
         ruta_con_diagonales = ruta_actual.replace("\\", "/")+"/Imagenes"
         
-        self.almacenador=CTkFrame(master=self.ventana2,width=595,height=324,fg_color="#F6F4EB",corner_radius=0)
+        self.almacenador=CTkFrame(master=self,width=595,height=324,fg_color="#F6F4EB",corner_radius=0)
         self.almacenador.pack_propagate(0)
         self.almacenador.pack(expand=True,side="top", fill="both")
         
-        self.almacenador2=CTkFrame(master=self.ventana2,width=595,height=80,fg_color="#4682A9",corner_radius=0)
+        self.LBFoto = CTkLabel(self.almacenador,bg_color="black",height=114, width=114).place(x=24, y=44)
+        self.LBDatos=CTkLabel(master=self.almacenador,text_color="#4682A9",text="Datos",font=("Poppins",20,"bold")).place(x=148,y=24)
+        self.LBNombre=CTkLabel(master=self.almacenador,text_color="#4682A9",text="Nombre:",font=("Poppins",16,"bold")).place(x=148,y=48)
+        self.LBApPat=CTkLabel(master=self.almacenador,text_color="#4682A9",text="Apellido paterno:",font=("Poppins",16,"bold")).place(x=148,y=68)
+        self.LBApMat=CTkLabel(master=self.almacenador,text_color="#4682A9",text="Apellido materno:",font=("Poppins",16,"bold")).place(x=148,y=91)
+        self.LBPuesto=CTkLabel(master=self.almacenador,text_color="#4682A9",text="Puesto:",font=("Poppins",16,"bold")).place(x=148,y=111)
+        self.LBTurno=CTkLabel(master=self.almacenador,text_color="#4682A9",text="Turno:",font=("Poppins",16,"bold")).place(x=148,y=131)
+        
+        self.ComBox=CTkComboBox(master=self,values=["Empleado 1","Empleado 2"],border_color="#4682A9",button_color="#4682A9",button_hover_color="#F6F4EB",fg_color="#F6F4EB",dropdown_fg_color="#F6F4EB",dropdown_hover_color="#F6F4EB",text_color="#4682A9",dropdown_text_color="#4682A9",font=("Poppins",16,"bold"),corner_radius=0).place(x=386,y=48)
+        
+        datos=[
+            ["Nombre","Apellido Paterno","Apellido Materno","Fecha","Hora de ingreso","Hora de salida"],
+            ["Juan","Jose","Jose","1/8/2024","1:00PM","7:00PM"]
+            ]
+        self.tablamarco=CTkScrollableFrame(master=self.almacenador,fg_color="transparent")
+        self.tablamarco.pack(expand=True, fill="both", padx=20,pady=(170,0))
+        self.tabla=CTkTable(master=self.tablamarco, values=datos,colors=["#F6F4EB", "#EEEEEE"],header_color="#4682A9")
+        self.tabla.edit_row(0, text_color="#F6F4EB", hover_color="#2A8C55")
+        self.tabla.pack(expand=True)
+        
+        self.almacenador2=CTkFrame(master=self,width=595,height=80,fg_color="#4682A9",corner_radius=0)
         self.almacenador2.pack_propagate(0)
         self.almacenador2.pack(expand=True,side="bottom", fill="both")
         
-        ImgEmp_data=Image.open(ruta_con_diagonales+"/Empleados.png")
-        ImgCerrar_data=Image.open(ruta_con_diagonales+"/abierto.png")
-        ImgEmp=CTkImage(light_image=ImgEmp_data,size=(32,32))
-        ImgCerrar=CTkImage(light_image=ImgCerrar_data,size=(32,32))
-        
-        self.botonregresar = CTkButton(master=self.almacenador2  ,image=ImgEmp,text="Cerrar",anchor="e", fg_color="#4682A9", hover_color="#91C8E4", height=40, width=114, font=("Poppins", 16,"bold"),corner_radius=0,command=self.Cerrar).pack(side="left")
-        self.botoneliminar = CTkButton(master=self.almacenador2,image=ImgCerrar,text="Eliminar",anchor="e", fg_color="#4682A9", hover_color="#91C8E4", height=40, width=114, font=("Poppins", 16,"bold"),corner_radius=0).pack(side="left")
-        self.botongestionar = CTkButton(master=self.almacenador2  ,image=ImgEmp,text="Gestionar",anchor="e", fg_color="#4682A9", hover_color="#91C8E4", height=40, width=114, font=("Poppins", 16,"bold"),corner_radius=0).pack(side="left")
-        self.botonnuevo = CTkButton(master=self.almacenador2,image=ImgCerrar,text="Nuevo",anchor="e", fg_color="#4682A9", hover_color="#91C8E4", height=40, width=114, font=("Poppins", 16,"bold"),corner_radius=0).pack(side="left")
-        
-        
-        
-        self.ventana2.mainloop()
 
         
+        ImgEli_data=Image.open(ruta_con_diagonales+"/Eliminar.png")
+        ImgCerrar_data=Image.open(ruta_con_diagonales+"/abierto.png")
+        ImgCrear_data=Image.open(ruta_con_diagonales+"/Crear.png")
+        ImgGes_data=Image.open(ruta_con_diagonales+"/portapapeles.png")
+        
+        ImgEli=CTkImage(light_image=ImgEli_data,size=(32,32))
+        ImgCerrar=CTkImage(light_image=ImgCerrar_data,size=(32,32))
+        ImgCrear=CTkImage(light_image=ImgCrear_data, size=(32,32))
+        ImgGes=CTkImage(light_image=ImgGes_data, size=(32,32))
+        
+        self.botonregresar = CTkButton(master=self.almacenador2  ,image=ImgCerrar,text="Cerrar",anchor="e", fg_color="#4682A9", hover_color="#91C8E4", height=40, width=114, font=("Poppins", 16,"bold"),corner_radius=0,command=self.destroy).pack(side="left")
+        self.botoneliminar = CTkButton(master=self.almacenador2,image=ImgEli,text="Eliminar",anchor="e", fg_color="#4682A9", hover_color="#91C8E4", height=40, width=114, font=("Poppins", 16,"bold"),corner_radius=0,command=self.Eliminar).pack(side="left")
+        self.botongestionar = CTkButton(master=self.almacenador2  ,image=ImgGes,text="Gestionar",anchor="e", fg_color="#4682A9", hover_color="#91C8E4", height=40, width=114, font=("Poppins", 16,"bold"),corner_radius=0,command=self.Abrir).pack(side="left")
+        self.botonnuevo = CTkButton(master=self.almacenador2,image=ImgCrear,text="Nuevo",anchor="e", fg_color="#4682A9", hover_color="#91C8E4", height=40, width=114, font=("Poppins", 16,"bold"),corner_radius=0,command=self.Abrir).pack(side="left")
+        
+        
+class CargaDocs(CTkToplevel):
+    def __init__(self):
+        super().__init__()
+        self.title("Face-link")
+        ancho_pantalla = self.winfo_screenwidth()
+        alto_pantalla = self.winfo_screenheight()
+        ancho_ventana = 580
+        alto_ventana = 459
+        x_pos = (ancho_pantalla - ancho_ventana) // 2
+        y_pos = (alto_pantalla - alto_ventana) // 2
+        self.geometry(f"{ancho_ventana}x{alto_ventana}+{x_pos}+{y_pos}")
+        self.resizable(0, 0)
+        #self.ventana.propagate(0)
+        #self.ventana.overrideredirect(True)  
+        ruta_actual = os.getcwd()
+        # Reemplaza las diagonales inversas por diagonales normales
+        ruta_con_diagonales = ruta_actual.replace("\\", "/")+"/Imagenes"
+        
+        ImgEscane_data=Image.open(ruta_con_diagonales+"/cara.png")
+        ImgINE_data=Image.open(ruta_con_diagonales+"/INE.png")
+        ImgCartaRec_data=Image.open(ruta_con_diagonales+"/CartaRec.png")
+        ImgCURP_data=Image.open(ruta_con_diagonales+"/CURP.png")
+        ImgActaNac_data=Image.open(ruta_con_diagonales+"/ActaNac.png")
+        ImgPDF_data=Image.open(ruta_con_diagonales+"/pdf.png")
+        ImgOjo_data=Image.open(ruta_con_diagonales+"/ojo.png")
+        ImgCerrar_data=Image.open(ruta_con_diagonales+"/abierto.png")
+        ImgGuardar_data=Image.open(ruta_con_diagonales+"/Guardar.png")
+        
+        
+        ImgGuardar=CTkImage(light_image=ImgGuardar_data,size=(32,32))
+        ImgOjo=CTkImage(light_image=ImgOjo_data,size=(32,32))
+        ImgEscane=CTkImage(light_image=ImgEscane_data,size=(32,32))
+        ImgIne=CTkImage(light_image=ImgINE_data,size=(32,32))
+        ImgCartaRec=CTkImage(light_image=ImgCartaRec_data, size=(32,32))
+        ImgCURP=CTkImage(light_image=ImgCURP_data, size=(32,32))
+        ImgActaNac=CTkImage(light_image=ImgActaNac_data, size=(32,32))
+        ImgPDF=CTkImage(light_image=ImgPDF_data,size=(32,32))
+        ImgCerrar=CTkImage(light_image=ImgCerrar_data,size=(32,32))
+        
+        self.almacenador=CTkFrame(master=self,width=424,height=459,fg_color="#F6F4EB",corner_radius=0)
+        self.almacenador.pack_propagate(0)
+        self.almacenador.pack(expand=True,side="bottom", fill="both")
+        
+        self.LBFoto = CTkLabel(self.almacenador,bg_color="black",text="",height=114, width=114).place(x=150, y=23)
+        self.BTEscanear=CTkButton(master=self.almacenador  ,image=ImgEscane,text="Escanear rostro",anchor="e", fg_color="#4682A9", hover_color="#91C8E4", height=36, width=143, font=("Poppins", 16,"bold"),corner_radius=10).place(x=280,y=61)
+        self.BTSubirINE=CTkButton(master=self.almacenador  ,image=ImgPDF,text="Subir documento",anchor="", fg_color="#4682A9", hover_color="#91C8E4", height=36, width=143, font=("Poppins", 16,"bold"),corner_radius=10).place(x=91,y=147)
+        self.BTSubirCartaRec=CTkButton(master=self.almacenador  ,image=ImgPDF,text="Subir documento",anchor="e", fg_color="#4682A9", hover_color="#91C8E4", height=36, width=143, font=("Poppins", 16,"bold"),corner_radius=10).place(x=91,y=201)
+        self.BTSubirCURP=CTkButton(master=self.almacenador  ,image=ImgPDF,text="Subir documento",anchor="e", fg_color="#4682A9", hover_color="#91C8E4", height=36, width=143, font=("Poppins", 16,"bold"),corner_radius=10).place(x=91,y=254)
+        self.BTActaNac=CTkButton(master=self.almacenador  ,image=ImgPDF,text="Subir documento",anchor="e", fg_color="#4682A9", hover_color="#91C8E4", height=36, width=143, font=("Poppins", 16,"bold"),corner_radius=10).place(x=91,y=305)
+        self.BTVis1=CTkButton(master=self.almacenador  ,image=ImgOjo,text="",anchor="e", fg_color="transparent", hover_color="#91C8E4", height=32, width=24, font=("Poppins", 16,"bold"),corner_radius=10).place(x=30,y=147)
+        self.BTVis2=CTkButton(master=self.almacenador  ,image=ImgOjo,text="",anchor="e", fg_color="transparent", hover_color="#91C8E4", height=32, width=24, font=("Poppins", 16,"bold"),corner_radius=10).place(x=30,y=201)
+        self.BTVis3=CTkButton(master=self.almacenador  ,image=ImgOjo,text="",anchor="e", fg_color="transparent", hover_color="#91C8E4", height=32, width=24, font=("Poppins", 16,"bold"),corner_radius=10).place(x=30,y=254)
+        self.BTVis4=CTkButton(master=self.almacenador  ,image=ImgOjo,text="",anchor="e", fg_color="transparent", hover_color="#91C8E4", height=32, width=24, font=("Poppins", 16,"bold"),corner_radius=10).place(x=30,y=305)
+
+
+        self.LBINE = CTkLabel(master=self.almacenador, text_color="#4682A9", text="INE", font=("Poppins", 20, "bold")).place(x=340, y=150)
+        self.LBImagenINE = CTkLabel(master=self.almacenador, image=ImgIne,text="").place(x=300, y=150)
+        
+        self.LBCartaRec = CTkLabel(master=self.almacenador, text_color="#4682A9", text="Carta de recomedación", font=("Poppins", 20, "bold")).place(x=340, y=204)
+        self.LBImagenCRec = CTkLabel(master=self.almacenador, image=ImgCartaRec,text="").place(x=300, y=204)
+
+        self.LBCURP = CTkLabel(master=self.almacenador, text_color="#4682A9", text="CURP", font=("Poppins", 20, "bold")).place(x=340, y=258)
+        self.LBImagenCURP = CTkLabel(master=self.almacenador, image=ImgCURP,text="").place(x=300, y=258)
     
+        self.LBDatosActaNac = CTkLabel(master=self.almacenador, text_color="#4682A9", text="Acta de nacimiento", font=("Poppins", 20, "bold")).place(x=340, y=312)
+        self.LBImagenANac = CTkLabel(master=self.almacenador, image=ImgActaNac,text="").place(x=300, y=312)
+            
+        self.botonregresar = CTkButton(master=self.almacenador  ,image=ImgCerrar,text="Regresar",anchor="e", fg_color="#4682A9", hover_color="#91C8E4", height=41, width=143, font=("Poppins", 16,"bold"),corner_radius=10,command=self.destroy).place(x=91, y=390)
+        self.botonregresar = CTkButton(master=self.almacenador  ,image=ImgGuardar,text="Guardar",anchor="e", fg_color="#4682A9", hover_color="#91C8E4", height=41, width=143, font=("Poppins", 16,"bold"),corner_radius=10,command=self.destroy).place(x=300, y=390)
+
 UsuCon()

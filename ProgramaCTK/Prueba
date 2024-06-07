@@ -1,0 +1,41 @@
+        self.ventana2=CTkToplevel()
+        self.ventana2.title("Face-link")
+        ancho_pantalla = self.ventana2.winfo_screenwidth()
+        alto_pantalla = self.ventana2.winfo_screenheight()
+        ancho_ventana = 595
+        alto_ventana = 404
+        x_pos = (ancho_pantalla - ancho_ventana) // 2
+        y_pos = (alto_pantalla - alto_ventana) // 2
+        self.ventana2.geometry(f"{ancho_ventana}x{alto_ventana}+{x_pos}+{y_pos}")
+        self.ventana2.resizable(0, 0)
+        #self.ventana.propagate(0)
+        #self.ventana.overrideredirect(True)
+        self.ventana2._set_appearance_mode("light")
+        
+        ruta_actual = os.getcwd()
+        # Reemplaza las diagonales inversas por diagonales normales
+        ruta_con_diagonales = ruta_actual.replace("\\", "/")+"/Imagenes"
+        
+        self.almacenador=CTkFrame(master=self.ventana2,width=595,height=324,fg_color="#F6F4EB",corner_radius=0)
+        self.almacenador.pack_propagate(0)
+        self.almacenador.pack(expand=True,side="top", fill="both")
+        
+        self.almacenador2=CTkFrame(master=self.ventana2,width=595,height=80,fg_color="#4682A9",corner_radius=0)
+        self.almacenador2.pack_propagate(0)
+        self.almacenador2.pack(expand=True,side="bottom", fill="both")
+        
+        ImgEli_data=Image.open(ruta_con_diagonales+"/Eliminar.png")
+        ImgCerrar_data=Image.open(ruta_con_diagonales+"/abierto.png")
+        ImgCrear_data=Image.open(ruta_con_diagonales+"/Crear.png")
+        ImgGes_data=Image.open(ruta_con_diagonales+"/portapapeles.png")
+        
+        ImgEli=CTkImage(light_image=ImgEli_data,size=(32,32))
+        ImgCerrar=CTkImage(light_image=ImgCerrar_data,size=(32,32))
+        ImgCrear=CTkImage(light_image=ImgCrear_data, size=(32,32))
+        ImgGes=CTkImage(light_image=ImgGes_data, size=(32,32))
+        
+        self.botonregresar = CTkButton(master=self.almacenador2  ,image=ImgCerrar,text="Cerrar",anchor="e", fg_color="#4682A9", hover_color="#91C8E4", height=40, width=114, font=("Poppins", 16,"bold"),corner_radius=0,command=self.Cerrar).pack(side="left")
+        self.botoneliminar = CTkButton(master=self.almacenador2,image=ImgEli,text="Eliminar",anchor="e", fg_color="#4682A9", hover_color="#91C8E4", height=40, width=114, font=("Poppins", 16,"bold"),corner_radius=0).pack(side="left")
+        self.botongestionar = CTkButton(master=self.almacenador2  ,image=ImgGes,text="Gestionar",anchor="e", fg_color="#4682A9", hover_color="#91C8E4", height=40, width=114, font=("Poppins", 16,"bold"),corner_radius=0).pack(side="left")
+        self.botonnuevo = CTkButton(master=self.almacenador2,image=ImgCrear,text="Nuevo",anchor="e", fg_color="#4682A9", hover_color="#91C8E4", height=40, width=114, font=("Poppins", 16,"bold"),corner_radius=0).pack(side="left")
+        
