@@ -4,8 +4,6 @@ import os
 from tkinter import messagebox
 from CTkTable import CTkTable
 
-
-
 class UsuCon():
     def cerrar(self):
         
