@@ -1,10 +1,12 @@
 from customtkinter import *
-from PIL import Image,ImageTk   
+from PIL import Image   
 import os
-from tkinter import messagebox
+from tkinter import messagebox,filedialog
 from CTkTable import CTkTable
 
+
 class UsuCon():
+    
     def cerrar(self):
         
         self.Des=messagebox.askquestion("¿Salir?","¿Quieres salir del programa?")
@@ -62,14 +64,13 @@ class UsuCon():
         self.ventana.mainloop()
 
 class Principal:
-    def cerrar(self):
-        
-        self.Des=messagebox.askquestion("Cerrar sesión?","¿Quíeres cerrar tu sesión?")
+
+    def cerrar(self):    
+        self.Des=messagebox.askquestion("¿Salir?","¿Quieres salir del programa?")
         if self.Des=="yes":
             self.ventana.quit()
             self.ventana.destroy()
-            UsuCon()
-    
+            UsuCon
     def Abrir(self):
         empleados_window = Empleados()
         empleados_window.mainloop()
@@ -103,14 +104,13 @@ class Principal:
         self.almacenador.pack(expand=True,side="right")
         
         self.LBRegistros=CTkLabel(master=self.almacenador,text="Registros", bg_color="#F6F4EB",text_color="#4682A9",font=("Poppins",25,"bold")).place(x=15,y=21)
-       
         datos=[
             ["Nombre","Apellido Paterno","Apellido Materno","Fecha","Hora de ingreso","Hora de salida"],
             ["Juan","Jose","Jose","1/8/2024","1:00PM","7:00PM"]
             ]
         self.tablamarco=CTkScrollableFrame(master=self.almacenador,fg_color="transparent")
         self.tablamarco.pack(expand=True, fill="both", padx=27, pady=50)
-        self.tabla=CTkTable(master=self.tablamarco, values=datos,colors=["#F6F4EB", "#EEEEEE"],header_color="#4682A9")
+        self.tabla=CTkTable(master=self.tablamarco, values=datos,colors=["#4682A9", "#EEEEEE"],header_color="#4682A9",text_color="#4682A9")
         self.tabla.edit_row(0, text_color="#F6F4EB", hover_color="#2A8C55")
         self.tabla.pack(expand=True)
         #FrameLateral
@@ -170,15 +170,20 @@ class Empleados(CTkToplevel):
         self.LBPuesto=CTkLabel(master=self.almacenador,text_color="#4682A9",text="Puesto:",font=("Poppins",16,"bold")).place(x=148,y=111)
         self.LBTurno=CTkLabel(master=self.almacenador,text_color="#4682A9",text="Turno:",font=("Poppins",16,"bold")).place(x=148,y=131)
         
-        self.ComBox=CTkComboBox(master=self,values=["Empleado 1","Empleado 2"],border_color="#4682A9",button_color="#4682A9",button_hover_color="#F6F4EB",fg_color="#F6F4EB",dropdown_fg_color="#F6F4EB",dropdown_hover_color="#F6F4EB",text_color="#4682A9",dropdown_text_color="#4682A9",font=("Poppins",16,"bold"),corner_radius=0).place(x=386,y=48)
-        
+        self.ComBox=CTkComboBox(master=self, values=["Empleado 1","Empleado 2"],
+                        border_color="#5BB0E7", button_color="#3F789D",
+                        button_hover_color="#F6F4EB", fg_color="#F6F4EB",
+                        dropdown_fg_color="#F6F4EB", dropdown_hover_color="#CCD1D3",
+                        text_color="#4682A9", dropdown_text_color="#4682A9",
+                        font=("Poppins",16,"bold"), corner_radius=0).place(x=386,y=48)
+
         datos=[
             ["Nombre","Apellido Paterno","Apellido Materno","Fecha","Hora de ingreso","Hora de salida"],
             ["Juan","Jose","Jose","1/8/2024","1:00PM","7:00PM"]
             ]
         self.tablamarco=CTkScrollableFrame(master=self.almacenador,fg_color="transparent")
         self.tablamarco.pack(expand=True, fill="both", padx=20,pady=(170,0))
-        self.tabla=CTkTable(master=self.tablamarco, values=datos,colors=["#F6F4EB", "#EEEEEE"],header_color="#4682A9")
+        self.tabla=CTkTable(master=self.tablamarco, values=datos,colors=["#4682A9", "#EEEEEE"],header_color="#4682A9",text_color="#4682A9")
         self.tabla.edit_row(0, text_color="#F6F4EB", hover_color="#2A8C55")
         self.tabla.pack(expand=True)
         
@@ -205,6 +210,18 @@ class Empleados(CTkToplevel):
         
         
 class CargaDocs(CTkToplevel):
+    def cargarDocs(self):
+            archivo_seleccionado = filedialog.askopenfilename(
+                title="Seleccionar archivo",
+                filetypes=(("Archivo PDF", ".pdf"), ("Todos los archivos", ".*"))) 
+            mensaje=messagebox.showinfo("Guardado","El archivo se guardó correctamente")
+        
+    def Guardao(self): 
+        messagebox.showinfo("Guardado","El registro se realizó correctamente")
+    
+    def Actualizado(self):
+        messagebox.showinfo("Actualizado","El registro se actualizó correctamente")
+        
     def __init__(self):
         super().__init__()
         self.title("Face-link")
@@ -249,10 +266,10 @@ class CargaDocs(CTkToplevel):
         
         self.LBFoto = CTkLabel(self.almacenador,bg_color="black",text="",height=114, width=114).place(x=150, y=23)
         self.BTEscanear=CTkButton(master=self.almacenador  ,image=ImgEscane,text="Escanear rostro",anchor="e", fg_color="#4682A9", hover_color="#91C8E4", height=36, width=143, font=("Poppins", 16,"bold"),corner_radius=10).place(x=280,y=61)
-        self.BTSubirINE=CTkButton(master=self.almacenador  ,image=ImgPDF,text="Subir documento",anchor="", fg_color="#4682A9", hover_color="#91C8E4", height=36, width=143, font=("Poppins", 16,"bold"),corner_radius=10).place(x=91,y=147)
-        self.BTSubirCartaRec=CTkButton(master=self.almacenador  ,image=ImgPDF,text="Subir documento",anchor="e", fg_color="#4682A9", hover_color="#91C8E4", height=36, width=143, font=("Poppins", 16,"bold"),corner_radius=10).place(x=91,y=201)
-        self.BTSubirCURP=CTkButton(master=self.almacenador  ,image=ImgPDF,text="Subir documento",anchor="e", fg_color="#4682A9", hover_color="#91C8E4", height=36, width=143, font=("Poppins", 16,"bold"),corner_radius=10).place(x=91,y=254)
-        self.BTActaNac=CTkButton(master=self.almacenador  ,image=ImgPDF,text="Subir documento",anchor="e", fg_color="#4682A9", hover_color="#91C8E4", height=36, width=143, font=("Poppins", 16,"bold"),corner_radius=10).place(x=91,y=305)
+        self.BTSubirINE=CTkButton(master=self.almacenador  ,image=ImgPDF,text="Subir documento",anchor="", fg_color="#4682A9", hover_color="#91C8E4", height=36, width=143, font=("Poppins", 16,"bold"),corner_radius=10,command=self.cargarDocs).place(x=91,y=147)
+        self.BTSubirCartaRec=CTkButton(master=self.almacenador  ,image=ImgPDF,text="Subir documento",anchor="e", fg_color="#4682A9", hover_color="#91C8E4", height=36, width=143, font=("Poppins", 16,"bold"),corner_radius=10,command=self.cargarDocs).place(x=91,y=201)
+        self.BTSubirCURP=CTkButton(master=self.almacenador  ,image=ImgPDF,text="Subir documento",anchor="e", fg_color="#4682A9", hover_color="#91C8E4", height=36, width=143, font=("Poppins", 16,"bold"),corner_radius=10,command=self.cargarDocs).place(x=91,y=254)
+        self.BTActaNac=CTkButton(master=self.almacenador  ,image=ImgPDF,text="Subir documento",anchor="e", fg_color="#4682A9", hover_color="#91C8E4", height=36, width=143, font=("Poppins", 16,"bold"),corner_radius=10,command=self.cargarDocs).place(x=91,y=305)
         self.BTVis1=CTkButton(master=self.almacenador  ,image=ImgOjo,text="",anchor="e", fg_color="transparent", hover_color="#91C8E4", height=32, width=24, font=("Poppins", 16,"bold"),corner_radius=10).place(x=30,y=147)
         self.BTVis2=CTkButton(master=self.almacenador  ,image=ImgOjo,text="",anchor="e", fg_color="transparent", hover_color="#91C8E4", height=32, width=24, font=("Poppins", 16,"bold"),corner_radius=10).place(x=30,y=201)
         self.BTVis3=CTkButton(master=self.almacenador  ,image=ImgOjo,text="",anchor="e", fg_color="transparent", hover_color="#91C8E4", height=32, width=24, font=("Poppins", 16,"bold"),corner_radius=10).place(x=30,y=254)
