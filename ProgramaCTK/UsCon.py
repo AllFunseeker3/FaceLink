@@ -166,8 +166,8 @@ class Empleados(CTkToplevel):
                         font=("Poppins",16,"bold"), corner_radius=0).place(x=386,y=48)
 
         datos=[
-            ["Nombre","Apellido Paterno","Apellido Materno","Fecha","Hora de ingreso","Hora de salida"],
-            ["Juan","Jose","Jose","1/8/2024","1:00PM","7:00PM"]
+            ["ID","Nombre","Apellido Paterno","Apellido Materno","Fecha","Hora de ingreso","Hora de salida"],
+            ["1","Juan","Jose","Jose","1/8/2024","1:00PM","7:00PM"]
             ]
         self.tablamarco=CTkScrollableFrame(master=self.almacenador,fg_color="transparent")
         self.tablamarco.pack(expand=True, fill="both", padx=20,pady=(170,0))
