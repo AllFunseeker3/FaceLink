@@ -46,7 +46,9 @@ def ejecutar_procedimiento(procedimiento, args=None):
     cursor = conexion.cursor()
     try:
             # Llamar al procedimiento almacenado
-            cursor.callproc(procedimiento, args=())
+
+
+            cursor.callproc(procedimiento, args=(args))
             
             # Si el procedimiento almacenado devuelve resultados, puedes obtenerlos así:
             for result in cursor.stored_results():
@@ -70,5 +72,9 @@ def ejecutar_procedimiento(procedimiento, args=None):
        # for fila in ejecutar_consulta("select * from empleados"):
         #    datos.append(fila)
 #Procedimiento
-       # for fila in ejecutar_procedimiento("ObtenerDatosEmpleados"):
-        #    datos.append(fila)
+for fila in ejecutar_procedimiento("ObtenerDatosEmpleados",()):
+    print(fila)
+        #Procedimiento con argunmento
+args = (1,)
+for fila in ejecutar_procedimiento("IniciarEmpleado",(1,)):
+    print(fila)
