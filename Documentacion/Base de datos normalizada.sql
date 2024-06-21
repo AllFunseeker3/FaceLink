@@ -70,3 +70,59 @@ VALUES (1, '2024-06-08', '08:00:00', TRUE);
 -- Registro de una salida
 INSERT INTO LOGFechaHora (IDEmpleados, Fecha, Hora, Entrada)
 VALUES (1, '2024-06-08', '17:00:00', FALSE);
+
+--Procedimientos Almacenados
+--InicializarRegistros
+DELIMITER $$
+
+CREATE PROCEDURE ObtenerDatosEmpleados()
+BEGIN
+    SELECT 
+        e.IDEmpleados AS id, 
+        e.Nombre AS nombre, 
+        e.ApellidoP AS apellido_paterno, 
+        e.ApellidoM AS apellido_materno, 
+        l1.Fecha AS fecha, 
+        l1.Hora AS hora_ingreso, 
+        l2.Hora AS hora_salida
+    FROM 
+        Empleados e
+    JOIN 
+        LOGFechaHora l1 ON e.IDEmpleados = l1.IDEmpleados AND l1.Entrada = TRUE
+    LEFT JOIN 
+        LOGFechaHora l2 ON e.IDEmpleados = l2.IDEmpleados AND l1.Fecha = l2.Fecha AND l2.Entrada = FALSE AND l2.Hora > l1.Hora
+    WHERE 
+        l2.IDLog IS NULL OR l2.IDLog = (
+            SELECT MIN(l3.IDLog)
+            FROM LOGFechaHora l3
+            WHERE l3.IDEmpleados = e.IDEmpleados AND l3.Fecha = l1.Fecha AND l3.Entrada = FALSE AND l3.Hora > l1.Hora
+        )
+    ORDER BY 
+        e.IDEmpleados, l1.Fecha;
+END$$
+
+DELIMITER ;
+--Fin Proceso inicializador registros.
+
+--Proceso almacenado para Inicializar EMpleados
+DELIMITER //
+
+CREATE PROCEDURE IniciarEmpleado(
+    IN p_IDEmpleado INT
+)
+BEGIN
+    SELECT lf.IDLog AS 'id',
+           e.Nombre,
+           e.ApellidoP,
+           e.ApellidoM,
+           lf.Fecha AS 'Fecha',
+           lf.Hora AS 'ingreso',
+           h.HoraSalida AS 'salida'
+    FROM LOGFechaHora lf
+    INNER JOIN Empleados e ON lf.IDEmpleados = e.IDEmpleados
+    INNER JOIN Horarios h ON e.IDHorario = h.IDHorario
+    WHERE lf.IDEmpleados = p_IDEmpleado;
+END //
+
+DELIMITER ;
+--FIn PRoceos
