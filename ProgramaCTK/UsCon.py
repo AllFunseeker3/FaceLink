@@ -81,13 +81,13 @@ class CargaDocs(CTkToplevel):
         self.TxBoxFechaN=CTkEntry(master=self.almacenador,width=150,height=35,text_color="#000000",font=("Poppins",18,"bold"),fg_color="#E0E0E0",corner_radius=10).place(x=192,y=177)
 
         self.LBTurno=CTkLabel(master=self.almacenador,text_color="#4682A9",text="Turno",font=("Poppins",18,"bold")).place(x=192,y=217)
-        self.ComBox=CTkComboBox(master=self, values=["Turno","Matutino","Vespertino"],
+        self.ComBox=CTkComboBox(master=self, values=["Turno","Matutino","Vespertino","Ambos"],
                         border_color="#5BB0E7", button_color="#3F789D",
                         button_hover_color="#F6F4EB", fg_color="#F6F4EB",
                         dropdown_fg_color="#F6F4EB", dropdown_hover_color="#CCD1D3",
                         text_color="#4682A9", dropdown_text_color="#4682A9",
                         font=("Poppins",16,"bold"), corner_radius=0).place(x=192,y=247)
-        
+                
         self.BTVis1=CTkButton(master=self.almacenador  ,image=ImgOjo,text="",anchor="e", fg_color="transparent", hover_color="#91C8E4", height=32, width=24, font=("Poppins", 16,"bold"),corner_radius=10).place(x=390,y=147)
         self.BTVis2=CTkButton(master=self.almacenador  ,image=ImgOjo,text="",anchor="e", fg_color="transparent", hover_color="#91C8E4", height=32, width=24, font=("Poppins", 16,"bold"),corner_radius=10).place(x=390,y=201)
         self.BTVis3=CTkButton(master=self.almacenador  ,image=ImgOjo,text="",anchor="e", fg_color="transparent", hover_color="#91C8E4", height=32, width=24, font=("Poppins", 16,"bold"),corner_radius=10).place(x=390,y=254)
@@ -107,7 +107,7 @@ class CargaDocs(CTkToplevel):
         self.LBImagenANac = CTkLabel(master=self.almacenador, image=ImgActaNac,text="").place(x=660, y=312)
             
         self.botonregresar = CTkButton(master=self.almacenador  ,image=ImgCerrar,text="Regresar",anchor="e", fg_color="#4682A9", hover_color="#91C8E4", height=41, width=143, font=("Poppins", 16,"bold"),corner_radius=10,command=self.destroy).place(x=91, y=390)
-        self.botonregresar = CTkButton(master=self.almacenador  ,image=ImgGuardar,text="Guardar",anchor="e", fg_color="#4682A9", hover_color="#91C8E4", height=41, width=143, font=("Poppins", 16,"bold"),corner_radius=10,command=self.destroy).place(x=300, y=390)
+        self.botonregresar = CTkButton(master=self.almacenador  ,image=ImgGuardar,text="Guardar",anchor="e", fg_color="#4682A9", hover_color="#91C8E4", height=41, width=143, font=("Poppins", 16,"bold"),corner_radius=10).place(x=300, y=390)
 
 
 
@@ -171,7 +171,7 @@ class Empleados(CTkToplevel):
             ]
         self.tablamarco=CTkScrollableFrame(master=self.almacenador,fg_color="transparent")
         self.tablamarco.pack(expand=True, fill="both", padx=20,pady=(170,0))
-        self.tabla=CTkTable(master=self.tablamarco, values=datos,colors=["#4682A9", "#EEEEEE"],header_color="#4682A9",text_color="#4682A9")
+        self.tabla=CTkTable(master=self.tablamarco, values=datos,colors=["#EEEEEE", "#EEEEEE"],header_color="#4682A9",text_color="#4682A9")
         self.tabla.edit_row(0, text_color="#F6F4EB", hover_color="#2A8C55")
         self.tabla.pack(expand=True)
         
@@ -314,7 +314,7 @@ class Principal():
             ]
         self.tablamarco=CTkScrollableFrame(master=self.almacenador,fg_color="transparent")
         self.tablamarco.pack(expand=True, fill="both", padx=27, pady=50)
-        self.tabla=CTkTable(master=self.tablamarco, values=datos,colors=["#4682A9", "#EEEEEE"],header_color="#4682A9",text_color="#4682A9")
+        self.tabla=CTkTable(master=self.tablamarco, values=datos,colors=["#EEEEEE", "#EEEEEE"],header_color="#4682A9",text_color="#4682A9")
         self.tabla.edit_row(0, text_color="#F6F4EB", hover_color="#2A8C55")
         self.tabla.pack(expand=True)
         #FrameLateral
