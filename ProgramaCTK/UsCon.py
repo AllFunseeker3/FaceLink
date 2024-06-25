@@ -1,11 +1,12 @@
 from customtkinter import *
 from PIL import Image   
 import os
-from tkinter import messagebox,filedialog
+from tkinter import messagebox,filedialog, Toplevel,Button
+from tkcalendar import *
 from CTkTable import CTkTable
 
-
 class CargaDocs(CTkToplevel):
+    
     def cargarDocs(self):
             archivo_seleccionado = filedialog.askopenfilename(
                 title="Seleccionar archivo",
@@ -18,6 +19,18 @@ class CargaDocs(CTkToplevel):
     def Actualizado(self):
         messagebox.showinfo("Actualizado","El registro se actualizó correctamente")
         
+    def mostrar_calendario(self):
+        ventana_calendario = Toplevel(self)
+        calendario = Calendar(ventana_calendario, selectmode='day', date_pattern='dd/mm/yyyy')
+        calendario.pack()
+
+        def actualizar_fecha():
+            fecha_seleccionada = calendario.get_date()
+            self.TxBoxFechaN.delete(0, "end")
+            self.TxBoxFechaN.insert(0, fecha_seleccionada)
+
+        boton_seleccionar = CTkButton(master=ventana_calendario, text="Seleccionar", command=actualizar_fecha)
+        boton_seleccionar.pack()
     def __init__(self):
         super().__init__()
         self.title("Face-link")
@@ -44,8 +57,10 @@ class CargaDocs(CTkToplevel):
         ImgOjo_data=Image.open(ruta_con_diagonales+"/ojo.png")
         ImgCerrar_data=Image.open(ruta_con_diagonales+"/abierto.png")
         ImgGuardar_data=Image.open(ruta_con_diagonales+"/Guardar.png")
+        ImgCalendario_data=Image.open(ruta_con_diagonales+"/calendario.png")
         
         
+        ImgCalendario=CTkImage(light_image=ImgCalendario_data,size=(32,32))
         ImgGuardar=CTkImage(light_image=ImgGuardar_data,size=(32,32))
         ImgOjo=CTkImage(light_image=ImgOjo_data,size=(32,32))
         ImgEscane=CTkImage(light_image=ImgEscane_data,size=(32,32))
@@ -77,16 +92,19 @@ class CargaDocs(CTkToplevel):
         self.LBAM=CTkLabel(master=self.almacenador,text_color="#4682A9",text="Apellido materno",font=("Poppins",18,"bold")).place(x=30,y=287)
         self.TxBoxAM=CTkEntry(master=self.almacenador,width=150,height=35,text_color="#000000",font=("Poppins",18,"bold"),fg_color="#E0E0E0",corner_radius=10).place(x=30,y=317)
 
-        self.LBFechaN=CTkLabel(master=self.almacenador,text_color="#4682A9",text="Fecha de nacimiento",font=("Poppins",18,"bold")).place(x=192,y=147)
-        self.TxBoxFechaN=CTkEntry(master=self.almacenador,width=150,height=35,text_color="#000000",font=("Poppins",18,"bold"),fg_color="#E0E0E0",corner_radius=10).place(x=192,y=177)
+        self.LBFechaN = CTkLabel(master=self.almacenador, text_color="#4682A9", text="Fecha de nacimiento", font=("Poppins", 18, "bold")).place(x=192, y=147)
+        self.TxBoxFechaN = CTkEntry(master=self.almacenador, placeholder_text="dd/mm/yyyy", width=120, height=35, text_color="#000000", font=("Poppins", 18, "bold"), fg_color="#E0E0E0", corner_radius=10)
+        self.TxBoxFechaN.place(x=192, y=177)
+        self.BTCalendario = CTkButton(master=self.almacenador, image=ImgCalendario, text="", anchor="e", fg_color="transparent", hover_color="#91C8E4", height=32, width=24, font=("Poppins", 16, "bold"), corner_radius=10, command=self.mostrar_calendario).place(x=318, y=177)
 
-        self.LBTurno=CTkLabel(master=self.almacenador,text_color="#4682A9",text="Turno",font=("Poppins",18,"bold")).place(x=192,y=217)
+        
+        self.LBTurno=CTkLabel(master=self.almacenador,text_color="#4682A9",text="Turno",font=("Poppins",18,"bold")).place(x=192,y=227)
         self.ComBox=CTkComboBox(master=self, values=["Turno","Matutino","Vespertino","Ambos"],
-                        border_color="#5BB0E7", button_color="#3F789D",
+                        state="readonly",border_color="#5BB0E7", button_color="#3F789D",
                         button_hover_color="#F6F4EB", fg_color="#F6F4EB",
                         dropdown_fg_color="#F6F4EB", dropdown_hover_color="#CCD1D3",
                         text_color="#4682A9", dropdown_text_color="#4682A9",
-                        font=("Poppins",16,"bold"), corner_radius=0).place(x=192,y=247)
+                        font=("Poppins",16,"bold"), corner_radius=0).place(x=192,y=257)
                 
         self.BTVis1=CTkButton(master=self.almacenador  ,image=ImgOjo,text="",anchor="e", fg_color="transparent", hover_color="#91C8E4", height=32, width=24, font=("Poppins", 16,"bold"),corner_radius=10).place(x=390,y=147)
         self.BTVis2=CTkButton(master=self.almacenador  ,image=ImgOjo,text="",anchor="e", fg_color="transparent", hover_color="#91C8E4", height=32, width=24, font=("Poppins", 16,"bold"),corner_radius=10).place(x=390,y=201)
@@ -116,7 +134,7 @@ class CargaDocs(CTkToplevel):
 class Empleados(CTkToplevel):
     
     def Eliminar(self):
-        self.Des=messagebox.askquestion("Eliminar?","Esta seguro que quieres eliminar a este empleado? Esta acción es irreversible")
+        self.Des=messagebox.askquestion("¿Eliminar?","¿Esta seguro que quieres eliminar a este empleado? Esta acción es irreversible")
         if self.Des=="yes":
             mensaje=messagebox.showinfo("Elminiado","Empleado eliminado")
     
@@ -152,14 +170,14 @@ class Empleados(CTkToplevel):
         
         self.LBFoto = CTkLabel(self.almacenador,bg_color="black",height=114, width=114).place(x=24, y=44)
         self.LBDatos=CTkLabel(master=self.almacenador,text_color="#4682A9",text="Datos",font=("Poppins",20,"bold")).place(x=148,y=24)
-        self.LBNombre=CTkLabel(master=self.almacenador,text_color="#4682A9",text="Nombre:",font=("Poppins",16,"bold")).place(x=148,y=48)
-        self.LBApPat=CTkLabel(master=self.almacenador,text_color="#4682A9",text="Apellido paterno:",font=("Poppins",16,"bold")).place(x=148,y=68)
-        self.LBApMat=CTkLabel(master=self.almacenador,text_color="#4682A9",text="Apellido materno:",font=("Poppins",16,"bold")).place(x=148,y=91)
-        self.LBPuesto=CTkLabel(master=self.almacenador,text_color="#4682A9",text="Puesto:",font=("Poppins",16,"bold")).place(x=148,y=111)
-        self.LBTurno=CTkLabel(master=self.almacenador,text_color="#4682A9",text="Turno:",font=("Poppins",16,"bold")).place(x=148,y=131)
+        self.LBNombre=CTkLabel(master=self.almacenador,text_color="#4682A9",text="Nombre: Juna",font=("Poppins",16,"bold")).place(x=148,y=48)
+        self.LBApPat=CTkLabel(master=self.almacenador,text_color="#4682A9",text="Apellido paterno: Jose",font=("Poppins",16,"bold")).place(x=148,y=68)
+        self.LBApMat=CTkLabel(master=self.almacenador,text_color="#4682A9",text="Apellido materno: Jose",font=("Poppins",16,"bold")).place(x=148,y=91)
+        self.LBPuesto=CTkLabel(master=self.almacenador,text_color="#4682A9",text="Fecha de nacimiento: 21/06/1945",font=("Poppins",16,"bold")).place(x=148,y=111)
+        self.LBTurno=CTkLabel(master=self.almacenador,text_color="#4682A9",text="Turno: Matutino",font=("Poppins",16,"bold")).place(x=148,y=131)
         
-        self.ComBox=CTkComboBox(master=self, values=["Empleado 1","Empleado 2"],
-                        border_color="#5BB0E7", button_color="#3F789D",
+        self.ComBox=CTkComboBox(master=self, values=["Juan Jose Jose","Pedro Posadas Hernandez"],
+                        state="readonly",border_color="#5BB0E7", button_color="#3F789D",
                         button_hover_color="#F6F4EB", fg_color="#F6F4EB",
                         dropdown_fg_color="#F6F4EB", dropdown_hover_color="#CCD1D3",
                         text_color="#4682A9", dropdown_text_color="#4682A9",
