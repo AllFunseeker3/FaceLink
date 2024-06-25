@@ -2,7 +2,7 @@ import cv2
 import os
 import numpy as np
 import ctypes
-from Ruta import *
+from .Ruta import *
 dataPath = RutaArchivos + 'Caras'  #Cambia a la ruta donde hayas almacenado Data
 peopleList = os.listdir(dataPath)
 print('Lista de personas: ', peopleList)
