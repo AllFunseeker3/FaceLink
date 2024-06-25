@@ -3,7 +3,7 @@ import os
 import imutils
 import time
 import ctypes
-from Ruta import *
+from .Ruta import *
 def Reconocer():
 	dataPath = RutaArchivos + 'Caras'  #Cambia a la ruta donde hayas almacenado Data
 	imagePaths = os.listdir(dataPath)
