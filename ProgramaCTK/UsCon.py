@@ -129,8 +129,6 @@ class CargaDocs(CTkToplevel):
 
 
 
-
-
 class Empleados(CTkToplevel):
     
     def Eliminar(self):
@@ -185,7 +183,10 @@ class Empleados(CTkToplevel):
 
         datos=[
             ["ID","Nombre","Apellido Paterno","Apellido Materno","Fecha","Hora de ingreso","Hora de salida"],
+            ["1","Juan","Jose","Jose","1/8/2024","1:00PM","7:00PM"],
+            ["1","Juan","Jose","Jose","1/8/2024","1:00PM","7:00PM"],
             ["1","Juan","Jose","Jose","1/8/2024","1:00PM","7:00PM"]
+            
             ]
         self.tablamarco=CTkScrollableFrame(master=self.almacenador,fg_color="transparent")
         self.tablamarco.pack(expand=True, fill="both", padx=20,pady=(170,0))
@@ -215,8 +216,6 @@ class Empleados(CTkToplevel):
         self.botonnuevo = CTkButton(master=self.almacenador2,image=ImgCrear,text="Nuevo",anchor="e", fg_color="#4682A9", hover_color="#91C8E4", height=40, width=114, font=("Poppins", 16,"bold"),corner_radius=0,command=self.Abrir).pack(side="left")
         
   
-
-
 class UsuCon():
     
     def cerrar(self):
@@ -280,7 +279,6 @@ class UsuCon():
 
 
 
-
 class Principal():
 
     def cerrar(self):    
@@ -328,6 +326,8 @@ class Principal():
         self.LBRegistros=CTkLabel(master=self.almacenador,text="Registros", bg_color="#F6F4EB",text_color="#4682A9",font=("Poppins",25,"bold")).place(x=15,y=21)
         datos=[
             ["id","Nombre","Apellido Paterno","Apellido Materno","Fecha","Hora de ingreso","Hora de salida"],
+            ["1","Juan","Jose","Jose","1/8/2024","1:00PM","7:00PM"],
+            ["1","Juan","Jose","Jose","1/8/2024","1:00PM","7:00PM"],
             ["1","Juan","Jose","Jose","1/8/2024","1:00PM","7:00PM"]
             ]
         self.tablamarco=CTkScrollableFrame(master=self.almacenador,fg_color="transparent")
