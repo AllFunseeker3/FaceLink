@@ -5,7 +5,7 @@ from tkinter import messagebox,filedialog, Toplevel,Button
 from tkcalendar import *
 from CTkTable import CTkTable
 #Ya me quiero dar de baja
-class CargaDocs(CTkToplevel):
+class CargaDocs(Toplevel):
     
     def cargarDocs(self):
             archivo_seleccionado = filedialog.askopenfilename(
@@ -129,7 +129,7 @@ class CargaDocs(CTkToplevel):
 
 
 
-class Empleados(CTkToplevel):
+class Empleados(Toplevel):
     
     def Eliminar(self):
         self.Des=messagebox.askquestion("¿Eliminar?","¿Esta seguro que quieres eliminar a este empleado? Esta acción es irreversible")
@@ -290,7 +290,6 @@ class Principal():
             
     def Abrir(self):
         empleados_window = Empleados()
-        self.ventana.iconify()
         empleados_window.lift()
         empleados_window.mainloop()
 
@@ -352,6 +351,9 @@ class Principal():
         
         self.ventana.mainloop()
         
+
+
+
 UsuCon()
 
 
