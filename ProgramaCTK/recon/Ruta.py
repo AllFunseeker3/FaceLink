@@ -1,3 +1,3 @@
 from pathlib import Path
-RutaArchivos = "C:/Rotros/"
+RutaArchivos = "C:/Rostros/"
 print(RutaArchivos)
