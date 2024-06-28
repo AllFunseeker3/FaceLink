@@ -110,6 +110,39 @@ END$$
 DELIMITER ;  
 --Fin Proceso inicializador registros.
 
+---proceso lista empleados
+DELIMITER //
+
+DELIMITER //
+
+CREATE PROCEDURE ConsultarEmpleadosConHorarios()
+BEGIN
+    SELECT 
+        E.IDEmpleados,
+        E.Nombre,
+        E.ApellidoP,
+        E.ApellidoM,
+        E.FechaNacimiento,
+        H.HoraEntrada,
+        H.HoraSalida
+    FROM 
+        Empleados E
+    JOIN 
+        Horarios H ON E.IDHorario = H.IDHorario;
+END //
+
+DELIMITER ;
+
+
+
+
+----
+
+
+
+
+
+
 --Proceso almacenado para Inicializar EMpleados
 DELIMITER //
 
@@ -121,7 +154,7 @@ BEGIN
            e.Nombre,
            e.ApellidoP,
            e.ApellidoM,
-           lf.Fecha AS 'Fecha',
+           e.FechaNacimiento AS 'Fecha',
            lf.Hora AS 'ingreso',
            h.HoraSalida AS 'salida'
     FROM LOGFechaHora lf
@@ -131,4 +164,45 @@ BEGIN
 END //
 
 DELIMITER ;  
+
+
+
+DELIMITER //
+
+CREATE PROCEDURE InsertarEmpleadoConDocumento(
+    IN p_Nombre VARCHAR(30),
+    IN p_ApellidoP VARCHAR(30),
+    IN p_ApellidoM VARCHAR(30),
+    IN p_FechaNacimiento DATE,
+    IN p_IDHorario INT,
+    IN p_FotoRuta VARCHAR(255),
+    IN p_TipoDocumento VARCHAR(20),
+    IN p_RutaDocumento VARCHAR(255)
+)
+BEGIN
+    DECLARE lastIDEmpleados INT;
+    DECLARE lastIDDocumentos INT;
+    
+    -- Insertar el empleado
+    INSERT INTO Empleados (Nombre, ApellidoP, ApellidoM, FechaNacimiento, IDHorario, FotoRuta)
+    VALUES (p_Nombre, p_ApellidoP, p_ApellidoM, p_FechaNacimiento, p_IDHorario, p_FotoRuta);
+    
+    -- Obtener el último ID insertado en la tabla Empleados
+    SET lastIDEmpleados = LAST_INSERT_ID();
+    
+    -- Insertar el documento
+    INSERT INTO Documentos (Tipo, Ruta)
+    VALUES (p_TipoDocumento, p_RutaDocumento);
+    
+    -- Obtener el último ID insertado en la tabla Documentos
+    SET lastIDDocumentos = LAST_INSERT_ID();
+    
+    -- Crear la relación entre el empleado y el documento
+    INSERT INTO Relacion_EmpleadosDocumentos (IDDocumentos, IDEmpleados)
+    VALUES (lastIDDocumentos, lastIDEmpleados);
+END //
+
+DELIMITER ;
+
+
 --FIn PRoceos

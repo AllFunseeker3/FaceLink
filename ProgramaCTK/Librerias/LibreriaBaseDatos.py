@@ -104,3 +104,14 @@ def ejecutar_modificacion(modificacion):
             cursor.close()
             connection.close()
             print("La conexión MySQL se ha cerrado")
+
+
+
+# ejecutar_procedimiento("InsertarEmpleadoConDocumento",('Juan', 
+#     'Perez', 
+#     'Lopez', 
+#     '1985-04-15', 
+#     1, 
+#     '/path/to/photo.jpg', 
+#     'Contrato', 
+#     '/path/to/document.pdf',))

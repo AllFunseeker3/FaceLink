@@ -10,6 +10,7 @@ import ctypes
 import datetime
 #Ya me quiero dar de baja
 class CargaDocs(CTkToplevel):
+    Previo = True
 
     def cargarDocs(self):
             archivo_seleccionado = filedialog.askopenfilename(
@@ -19,7 +20,7 @@ class CargaDocs(CTkToplevel):
         
     def Guardado(self): 
         messagebox.showinfo("Guardado","El registro se realizó correctamente")
-        print(self.TxBoxNombre.get())
+        print(str(self.TxBoxNombre.get()))
 
     
     def Actualizado(self):
@@ -37,17 +38,71 @@ class CargaDocs(CTkToplevel):
 
         boton_seleccionar = CTkButton(master=ventana_calendario, text="Seleccionar", command=actualizar_fecha)
         boton_seleccionar.pack()
-    
+    def guardar(self):
+        if self.Previo:
+            nombre = str(self.TxBoxNombre.get())
+            ap = str(self.TxBoxAP.get())
+            am = str(self.TxBoxAM.get())
+            ejecutar_procedimiento("InsertarEmpleadoConDocumento",(nombre, 
+            ap, 
+            am, 
+            '1985-04-15', 
+            1, 
+            '/path/to/photo.jpg', 
+            'Contrato', 
+            '/path/to/document.pdf',))
+            print(nombre, ap,am)
+        else:
+            ejecutar_procedimiento("CALL ActualizarEmpleado",(
+                        self.ID,
+                        nombre, 
+                        ap,
+                        am, 
+                        1, 
+                        2, 
+                        '/path/to/new_photo.jpg',))
+                
+        
+
     def iniciar(self):
-        print(str(self.TxBoxNombre.get))
+        Turnos = ejecutar_consulta("SELECT TIME_FORMAT(horaEntrada, '%H:%i') AS HoraEntrada, TIME_FORMAT(HoraSalida, '%H:%i') AS HoraSalida FROM Horarios")
+        Turnos_str = [str(item) for item in Turnos]
+
+        resultado = ejecutar_consulta("SELECT e.Nombre, e.ApellidoP,e.ApellidoM,e.FechaNacimiento,e.idHorario,e.FotoRuta" + 
+                                " FROM Empleados e JOIN Horarios h ON e.IDHorario = h.IDHorario " + "WHERE e.IDEmpleados = " 
+                                + self.ID)
+        r = eval(str(resultado[0]))
+        nombre =r[0]
+        ap = r[1]
+        am = r[2]
+        fn = r[3]
+        h = r[4]
+        if h == 1:
+            self.ComBox.set(Turnos_str[0])
+        elif h == 2:
+            self.ComBox.set(Turnos_str[1])
+        elif h == 3:
+            self.ComBox.set(Turnos_str[2])
+
+
+        ft = r[5]
+        print("TXT nombre: "+str(self.TxBoxNombre.get())+" :fin")
+        self.TxBoxNombre.insert(0,nombre)
+        self.TxBoxAP.insert(0,ap)
+        self.TxBoxAM.insert(0,am)
+        self.TxBoxFechaN.insert(0,fn)
+
+        
+        
+       
         
 
     def __init__(self,ID = NONE):
         self.ID = ID
         if ID is NONE:
+            self.Previo = False
             print("es non")
             ID = ejecutar_consulta("SELECT MAX(IDEmpleados) + 1 AS SiguienteID FROM Empleados")
-       
         super().__init__()
         self.title("Face-link")
         ancho_pantalla = self.winfo_screenwidth()
@@ -100,7 +155,7 @@ class CargaDocs(CTkToplevel):
         #x30
         
         self.LBNombre=CTkLabel(master=self.almacenador,text_color="#4682A9",text="Nombre",font=("Poppins",18,"bold")).place(x=30,y=147)
-        self.TxBoxNombre=CTkEntry(master=self.almacenador,text="",width=150,height=35,text_color="#000000",font=("Poppins",18,"bold"),fg_color="#E0E0E0",corner_radius=10)
+        self.TxBoxNombre=CTkEntry(master=self.almacenador,width=150,height=35,text_color="#000000",font=("Poppins",18,"bold"),fg_color="#E0E0E0",corner_radius=10)
         self.TxBoxNombre.place(x=30,y=177)
         
         self.LBAP=CTkLabel(master=self.almacenador,text_color="#4682A9",text="Apellido paterno",font=("Poppins",18,"bold")).place(x=30,y=217)
@@ -147,8 +202,8 @@ class CargaDocs(CTkToplevel):
         self.LBImagenANac = CTkLabel(master=self.almacenador, image=ImgActaNac,text="").place(x=660, y=312)
             
         self.botonregresar = CTkButton(master=self.almacenador  ,image=ImgCerrar,text="Regresar",anchor="e", fg_color="#4682A9", hover_color="#91C8E4", height=41, width=143, font=("Poppins", 16,"bold"),corner_radius=10,command=self.destroy).place(x=91, y=390)
-        self.botonregresar = CTkButton(master=self.almacenador  ,image=ImgGuardar,text="Guardar",anchor="e", fg_color="#4682A9", hover_color="#91C8E4", height=41, width=143, font=("Poppins", 16,"bold"),corner_radius=10).place(x=300, y=390)
-
+        self.botonregresar = CTkButton(master=self.almacenador  ,image=ImgGuardar,text="Guardar",anchor="e", fg_color="#4682A9", hover_color="#91C8E4", height=41, width=143, font=("Poppins", 16,"bold"),corner_radius=10,command= lambda: self.guardar()).place(x=300, y=390)
+        self.iniciar()
 
 
 class Empleados(CTkToplevel):
@@ -227,7 +282,7 @@ class Empleados(CTkToplevel):
         datos=[
             ["ID","Nombre","Apellido Paterno","Apellido Materno","Fecha","Hora de ingreso","Hora de salida"]
             ]
-        for fila in ejecutar_procedimiento("InicializarRegistros",()):
+        for fila in ejecutar_procedimiento("ConsultarEmpleadosConHorarios",()):
             datos.append(fila)
         self.tabla.configure(values=datos)
 
@@ -304,7 +359,7 @@ class Empleados(CTkToplevel):
         datos=[
             ["ID","Nombre","Apellido Paterno","Apellido Materno","Fecha","Hora de ingreso","Hora de salida"]
             ]
-        for fila in ejecutar_procedimiento("InicializarRegistros",()):
+        for fila in ejecutar_procedimiento("ConsultarEmpleadosConHorarios",()):
             datos.append(fila)
         
         self.tablamarco=CTkScrollableFrame(master=self.almacenador,fg_color="transparent")
