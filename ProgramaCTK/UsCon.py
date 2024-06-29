@@ -27,70 +27,90 @@ class CargaDocs(CTkToplevel):
         messagebox.showinfo("Actualizado","El registro se actualizó correctamente")
         
     def mostrar_calendario(self):
+        self.TxBoxFechaN.configure(state='normal')
         ventana_calendario = Toplevel(self)
-        calendario = Calendar(ventana_calendario, selectmode='day', date_pattern='dd/mm/yyyy')
+        calendario = Calendar(ventana_calendario, selectmode='day', date_pattern='yyyy-mm-dd')
         calendario.pack()
 
         def actualizar_fecha():
             fecha_seleccionada = calendario.get_date()
             self.TxBoxFechaN.delete(0, "end")
             self.TxBoxFechaN.insert(0, fecha_seleccionada)
+            self.TxBoxFechaN.configure(state="disabled")
 
         boton_seleccionar = CTkButton(master=ventana_calendario, text="Seleccionar", command=actualizar_fecha)
         boton_seleccionar.pack()
+    
+    def saberHorario(self):
+        r = ""
+        h = str(self.ComBox.get())
+        if h == "['08:00', '14:00']":
+            r = "1"
+        elif h == "['14:00', '21:00']":
+            r = "2"
+        elif h == "['08:00', '21:00']":
+            r = "3"
+        print("HOrarioID"+r)
+        return r
+        
+
     def guardar(self):
-        if self.Previo:
-            nombre = str(self.TxBoxNombre.get())
-            ap = str(self.TxBoxAP.get())
-            am = str(self.TxBoxAM.get())
-            ejecutar_procedimiento("InsertarEmpleadoConDocumento",(nombre, 
-            ap, 
-            am, 
-            '1985-04-15', 
-            1, 
-            '/path/to/photo.jpg', 
-            'Contrato', 
-            '/path/to/document.pdf',))
-            print(nombre, ap,am)
+        id = self.ID
+        nombre = str(self.TxBoxNombre.get())
+        ap = str(self.TxBoxAP.get())
+        am = str(self.TxBoxAM.get())
+        fn = str(self.TxBoxFechaN.get())
+        h = self.saberHorario()
+        ft = Rut =  "C:/Rostros/Caras/"+ str(self.ID) +"/Rostro_20.jpg" 
+        print(ft)
+        if id and nombre and ap and am and fn and h and ft:
+            if self.Previo:
+                #si se le dio un ID (osease si estas editando un usuario)
+                n = (str(ejecutar_modificacion(f"UPDATE Empleados SET Nombre = '{nombre}',ApellidoP = '{ap}',ApellidoM = '{am}',FechaNacimiento = '{fn}',IDHorario = {h} ,FotoRuta = '{ft}' WHERE IDEmpleados = {id}")))
+                if str(n) == "1":
+                     messagebox.showinfo("FaceLink dice:","Guardado con exito!")
+                     self.destroy
+                else:
+                     messagebox.showinfo("FaceLink dice:","Error, no se ha guardado nada!")
+            else:
+                #si es nuevo user
+                n = (str(ejecutar_modificacion(f"INSERT INTO Empleados (Nombre, ApellidoP, ApellidoM, FechaNacimiento, IDHorario,fotoruta) VALUES ('{nombre}', '{ap}', '{am}', '{fn}', {h} , '{ft}')")))
+                if str(n) == "1":
+                     messagebox.showinfo("FaceLink dice:","Guardado con exito!")
+                else:
+                     messagebox.showinfo("FaceLink dice:","Error, no se ha guardado nada!")
         else:
-            ejecutar_procedimiento("CALL ActualizarEmpleado",(
-                        self.ID,
-                        nombre, 
-                        ap,
-                        am, 
-                        1, 
-                        2, 
-                        '/path/to/new_photo.jpg',))
-                
+            messagebox.showinfo("FaceLink dice:","Falta alguno de los datos!")
         
 
     def iniciar(self):
         Turnos = ejecutar_consulta("SELECT TIME_FORMAT(horaEntrada, '%H:%i') AS HoraEntrada, TIME_FORMAT(HoraSalida, '%H:%i') AS HoraSalida FROM Horarios")
         Turnos_str = [str(item) for item in Turnos]
+        if self.Previo == True:
+            resultado = ejecutar_consulta("SELECT e.Nombre, e.ApellidoP,e.ApellidoM,e.FechaNacimiento,e.idHorario,e.FotoRuta" + 
+                                    " FROM Empleados e JOIN Horarios h ON e.IDHorario = h.IDHorario " + "WHERE e.IDEmpleados = " 
+                                    + self.ID)
+            r = eval(str(resultado[0]))
+            nombre =r[0]
+            ap = r[1]
+            am = r[2]
+            fn = r[3]
+            h = r[4]
+            if h == 1:
+                self.ComBox.set(Turnos_str[0])
+            elif h == 2:
+                self.ComBox.set(Turnos_str[1])
+            elif h == 3:
+                self.ComBox.set(Turnos_str[2])
 
-        resultado = ejecutar_consulta("SELECT e.Nombre, e.ApellidoP,e.ApellidoM,e.FechaNacimiento,e.idHorario,e.FotoRuta" + 
-                                " FROM Empleados e JOIN Horarios h ON e.IDHorario = h.IDHorario " + "WHERE e.IDEmpleados = " 
-                                + self.ID)
-        r = eval(str(resultado[0]))
-        nombre =r[0]
-        ap = r[1]
-        am = r[2]
-        fn = r[3]
-        h = r[4]
-        if h == 1:
-            self.ComBox.set(Turnos_str[0])
-        elif h == 2:
-            self.ComBox.set(Turnos_str[1])
-        elif h == 3:
-            self.ComBox.set(Turnos_str[2])
-
-
-        ft = r[5]
-        print("TXT nombre: "+str(self.TxBoxNombre.get())+" :fin")
-        self.TxBoxNombre.insert(0,nombre)
-        self.TxBoxAP.insert(0,ap)
-        self.TxBoxAM.insert(0,am)
-        self.TxBoxFechaN.insert(0,fn)
+            ft = r[5]
+            print("TXT nombre: "+str(self.TxBoxNombre.get())+" :fin")
+            self.TxBoxNombre.insert(0,nombre)
+            self.TxBoxAP.insert(0,ap)
+            self.TxBoxAM.insert(0,am)
+            self.TxBoxFechaN.configure(state='normal')
+            self.TxBoxFechaN.insert(0,fn)
+            self.TxBoxFechaN.configure(state='disabled')
 
         
         
@@ -167,9 +187,10 @@ class CargaDocs(CTkToplevel):
         self.TxBoxAM.place(x=30,y=317)
 
         self.LBFechaN = CTkLabel(master=self.almacenador, text_color="#4682A9", text="Fecha de nacimiento", font=("Poppins", 18, "bold")).place(x=192, y=147)
-        self.TxBoxFechaN = CTkEntry(master=self.almacenador, placeholder_text="dd/mm/yyyy", width=120, height=35, text_color="#000000", font=("Poppins", 18, "bold"), fg_color="#E0E0E0", corner_radius=10)
+        self.TxBoxFechaN = CTkEntry(master=self.almacenador,state='disabled', placeholder_text="yy-mm-yyyy", width=120, height=35, text_color="#000000", font=("Poppins", 18, "bold"), fg_color="#E0E0E0", corner_radius=10)
         self.TxBoxFechaN.place(x=192, y=177)
-        self.BTCalendario = CTkButton(master=self.almacenador, image=ImgCalendario, text="", anchor="e", fg_color="transparent", hover_color="#91C8E4", height=32, width=24, font=("Poppins", 16, "bold"), corner_radius=10, command=self.mostrar_calendario).place(x=318, y=177)
+        self.BTCalendario = CTkButton(master=self.almacenador, image=ImgCalendario, text="", anchor="e", fg_color="transparent", hover_color="#91C8E4", height=32, width=24, font=("Poppins", 16, "bold"), corner_radius=10,command=self.mostrar_calendario)
+        self.BTCalendario.place(x=318, y=177)
 
         
         Turnos = ejecutar_consulta("SELECT TIME_FORMAT(horaEntrada, '%H:%i') AS HoraEntrada, TIME_FORMAT(HoraSalida, '%H:%i') AS HoraSalida FROM Horarios")
