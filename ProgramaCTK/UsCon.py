@@ -1,3 +1,4 @@
+import shutil
 from customtkinter import *
 from PIL import Image   
 import os
@@ -248,8 +249,16 @@ class CargaDocs(CTkToplevel):
 
 
 class Empleados(CTkToplevel):
-    
+
+
+
     def Eliminar(self):
+        def borrar_carpeta(ruta):
+            if os.path.isdir(ruta):
+                shutil.rmtree(ruta)
+                print(f"La carpeta '{ruta}' ha sido borrada.")
+            else:
+                print(f"La carpeta '{ruta}' no existe.")
         self.Des=messagebox.askquestion("¿Eliminar?","¿Esta seguro que quieres eliminar a este empleado? Esta acción es irreversible")
         if self.Des=="yes":
             selected_value = self.ComBox.get() 
@@ -264,6 +273,8 @@ class Empleados(CTkToplevel):
                 ejecutar_modificacion("DELETE FROM LOGFechaHora WHERE IDEmpleados = " + str(r[7]))
                 ejecutar_modificacion("DELETE FROM Relacion_EmpleadosDocumentos WHERE IDEmpleados = " + str(r[7]))
                 ejecutar_modificacion("DELETE FROM Empleados WHERE IDEmpleados = " + str(r[7]))
+                ruta = "C:/Rostros/Caras/" + str(r[7])
+                borrar_carpeta(ruta)
                 mensaje=messagebox.showinfo("Elminiado","Empleado eliminado: " + str(r[1]) + " " + str(r[2]))
                 self.ComBox.set("")
                 EmpleadosVal = ejecutar_consulta("select idEmpleados,nombre,apellidop from empleados")
