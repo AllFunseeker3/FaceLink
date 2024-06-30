@@ -13,12 +13,47 @@ import datetime
 class CargaDocs(CTkToplevel):
     Previo = True
 
-    def cargarDocs(self):
-            archivo_seleccionado = filedialog.askopenfilename(
-                title="Seleccionar archivo",
-                filetypes=(("Archivo PDF", ".pdf"), ("Todos los archivos", ".*"))) 
-            mensaje=messagebox.showinfo("Guardado","El archivo se guardó correctamente")
+    def cargarDocs(self,tipo):
+        ID = self.ID
+        # Obtener el nombre de usuario
+        username = os.getlogin()
         
+        # Crear la ruta de la carpeta destino
+        datos = ejecutar_consulta(f"select nombre,apellidop from empleados where idEmpleados = {str(ID)}")
+        destino_carpeta = f"C:/Users/{username}/Documents/Documentos Empleados/{ID} " + str(datos[0][0]) + " " + str(datos[0][1])
+        
+        # Crear la carpeta si no existe
+        if not os.path.exists(destino_carpeta):
+            os.makedirs(destino_carpeta)
+            
+        # Pedir al usuario que seleccione un archivo
+        archivo_seleccionado = filedialog.askopenfilename(
+            title="Seleccionar archivo",
+            filetypes=(("Archivo PDF", ".pdf"), ("Todos los archivos", ".*")))
+        
+        # Verificar si se seleccionó un archivo
+        if archivo_seleccionado:
+            # Copiar el archivo seleccionado a la carpeta destino
+            archivo_nombre = os.path.basename(archivo_seleccionado)
+            destino_archivo = os.path.join(destino_carpeta, archivo_nombre)
+            try:
+                shutil.copy2(archivo_seleccionado, destino_archivo)
+                ruta = (str(destino_archivo) + str(archivo_seleccionado))
+                messagebox.showinfo("Guardado", "El archivo se guardó correctamente")
+                ejecutar_modificacion(f"INSERT INTO Documentos (Tipo, Ruta) VALUES ('{tipo}','{ruta}')")
+                iddocumentos = str(ejecutar_consulta("SELECT max(IDDocumentos) from documentos")[0][0])
+                print("IDdoc " + str(iddocumentos))
+                ejecutar_modificacion(f"INSERT INTO Relacion_EmpleadosDocumentos (IDDocumentos, IDEmpleados) VALUES ({str(iddocumentos)},{self.ID})")
+            except Exception as e:
+                messagebox.showinfo("Facelink Error:","Error: " + str(e))
+            
+            # Mostrar mensaje de confirmación
+           
+        else:  
+            messagebox.showinfo("No Guardado", "No se ha guardado ningun archivo")
+    
+
+
     def Guardado(self): 
         messagebox.showinfo("Guardado","El registro se realizó correctamente")
 
@@ -73,7 +108,6 @@ class CargaDocs(CTkToplevel):
                 else:
                      messagebox.showinfo("FaceLink dice:","Error, no se ha guardado nada!")
             else:
-                print("Ruta "+Rut)
                 #si es nuevo user
                 Rut =  "C:/Rostros/Caras/"+ str(ejecutar_consulta("select Auto_increment from information_schema.Tables where table_name = 'empleados'")[0][0])
                 if os.path.isdir(Rut):
@@ -131,7 +165,6 @@ class CargaDocs(CTkToplevel):
             id = self.ID
             Capturar(id)
         else:
-            print(str(ejecutar_consulta(" select Auto_increment from information_schema.Tables where table_name = 'empleados'")[0][0]))
             Capturar(str(ejecutar_consulta("select Auto_increment from information_schema.Tables where table_name = 'empleados'")[0][0]))
         
         
@@ -142,8 +175,8 @@ class CargaDocs(CTkToplevel):
         self.ID = ID
         if ID is NONE:
             self.Previo = False
-            ID = ejecutar_consulta("SELECT MAX(IDEmpleados) + 1 AS SiguienteID FROM Empleados")
-            print(ID)
+            self.ID = str(ejecutar_consulta("select Auto_increment from information_schema.Tables where table_name = 'empleados'")[0][0])
+
         super().__init__()
         self.title("Face-link")
         ancho_pantalla = self.winfo_screenwidth()
@@ -189,10 +222,10 @@ class CargaDocs(CTkToplevel):
         
         self.LBFoto = CTkLabel(self.almacenador,bg_color="black",text="",height=114, width=114).place(x=150, y=23)
         self.BTEscanear=CTkButton(master=self.almacenador  ,image=ImgEscane,text="Escanear rostro",anchor="e", fg_color="#4682A9", hover_color="#91C8E4", height=36, width=143, font=("Poppins", 16,"bold"),corner_radius=10,command= lambda: self.Escanear()).place(x=280,y=61)
-        self.BTSubirINE=CTkButton(master=self.almacenador  ,image=ImgPDF,text="Subir documento",anchor="", fg_color="#4682A9", hover_color="#91C8E4", height=36, width=143, font=("Poppins", 16,"bold"),corner_radius=10,command=self.cargarDocs).place(x=450,y=147)
-        self.BTSubirCartaRec=CTkButton(master=self.almacenador  ,image=ImgPDF,text="Subir documento",anchor="e", fg_color="#4682A9", hover_color="#91C8E4", height=36, width=143, font=("Poppins", 16,"bold"),corner_radius=10,command=self.cargarDocs).place(x=450,y=201)
-        self.BTSubirCURP=CTkButton(master=self.almacenador  ,image=ImgPDF,text="Subir documento",anchor="e", fg_color="#4682A9", hover_color="#91C8E4", height=36, width=143, font=("Poppins", 16,"bold"),corner_radius=10,command=self.cargarDocs).place(x=450,y=254)
-        self.BTActaNac=CTkButton(master=self.almacenador  ,image=ImgPDF,text="Subir documento",anchor="e", fg_color="#4682A9", hover_color="#91C8E4", height=36, width=143, font=("Poppins", 16,"bold"),corner_radius=10,command=self.cargarDocs).place(x=450,y=305)
+        self.BTSubirINE=CTkButton(master=self.almacenador  ,image=ImgPDF,text="Subir documento",anchor="", fg_color="#4682A9", hover_color="#91C8E4", height=36, width=143, font=("Poppins", 16,"bold"),corner_radius=10,command=lambda: self.cargarDocs("INE")).place(x=450,y=147)
+        self.BTSubirCartaRec=CTkButton(master=self.almacenador  ,image=ImgPDF,text="Subir documento",anchor="e", fg_color="#4682A9", hover_color="#91C8E4", height=36, width=143, font=("Poppins", 16,"bold"),corner_radius=10,command=lambda: self.cargarDocs("carta de recomendacion")).place(x=450,y=201)
+        self.BTSubirCURP=CTkButton(master=self.almacenador  ,image=ImgPDF,text="Subir documento",anchor="e", fg_color="#4682A9", hover_color="#91C8E4", height=36, width=143, font=("Poppins", 16,"bold"),corner_radius=10,command=lambda: self.cargarDocs("CURP")).place(x=450,y=254)
+        self.BTActaNac=CTkButton(master=self.almacenador  ,image=ImgPDF,text="Subir documento",anchor="e", fg_color="#4682A9", hover_color="#91C8E4", height=36, width=143, font=("Poppins", 16,"bold"),corner_radius=10,command=lambda: self.cargarDocs("Acta de nacimiento")).place(x=450,y=305)
         #x30
         
         self.LBNombre=CTkLabel(master=self.almacenador,text_color="#4682A9",text="Nombre",font=("Poppins",18,"bold")).place(x=30,y=147)
@@ -256,7 +289,6 @@ class Empleados(CTkToplevel):
         def borrar_carpeta(ruta):
             if os.path.isdir(ruta):
                 shutil.rmtree(ruta)
-                print(f"La carpeta '{ruta}' ha sido borrada.")
             else:
                 print(f"La carpeta '{ruta}' no existe.")
         self.Des=messagebox.askquestion("¿Eliminar?","¿Esta seguro que quieres eliminar a este empleado? Esta acción es irreversible")
@@ -270,9 +302,15 @@ class Empleados(CTkToplevel):
             r = eval(str(resultado[0]))
             nombre = "Nombre: "+r[0]
             try:
+                # ID = str(r[7])
+                # username = os.getlogin()
+                # datos = ejecutar_consulta(f"select nombre,apellidop from empleados where idEmpleados = {str(ID)}")
+                # destino_carpeta = f"C:/Users/{username}/Documents/Documentos Empleados/{ID} " + str(datos[0][0]) + " " + str(datos[0][1])
+                
                 ejecutar_modificacion("DELETE FROM LOGFechaHora WHERE IDEmpleados = " + str(r[7]))
                 ejecutar_modificacion("DELETE FROM Relacion_EmpleadosDocumentos WHERE IDEmpleados = " + str(r[7]))
                 ejecutar_modificacion("DELETE FROM Empleados WHERE IDEmpleados = " + str(r[7]))
+                ejecutar_modificacion("DELETE FROM Documentos WHERE IDDocumentos NOT IN (SELECT IDDocumentos FROM Relacion_EmpleadosDocumentos)")
                 ruta = "C:/Rostros/Caras/" + str(r[7])
                 borrar_carpeta(ruta)
                 mensaje=messagebox.showinfo("Elminiado","Empleado eliminado: " + str(r[1]) + " " + str(r[2]))
@@ -337,17 +375,13 @@ class Empleados(CTkToplevel):
 
     def iniciartabla(self,id = None):
         if id == None:
-            print("sin id")
             datos=[["Fecha","Hora de ingreso","Hora de salida","Retardo"],["NULL","NULL","NULL","NULL"]]
             
             return datos
         else:
-            print("IDTabla " + id)
             datos=[["Fecha","Hora de ingreso","Hora de salida","Retardo","s"]]
             for fila in ejecutar_consulta(f"SELECT l.Fecha, l.Hora AS HoraIngreso, (SELECT Hora FROM LOGFechaHora l2 WHERE l2.IDEmpleados = l.IDEmpleados AND l2.Fecha = l.Fecha AND l2.Entrada = 0 LIMIT 1) AS HoraSalida, CASE WHEN TIMESTAMPDIFF(MINUTE, h.HoraEntrada, l.Hora) > 15 THEN 'Retardo' ELSE 'A tiempo' END AS Estado FROM LOGFechaHora l JOIN Empleados e ON l.IDEmpleados = e.IDEmpleados JOIN Horarios h ON e.IDHorario = h.IDHorario WHERE l.IDEmpleados = {id} AND l.Entrada = 1"):
                 datos.append(fila)
-                print(fila)
-            print(datos)
             return datos
         
 
