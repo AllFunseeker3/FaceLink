@@ -10,7 +10,7 @@ from Librerias.LibreriaBaseDatos import *
 import ctypes
 import datetime
 #Ya me quiero dar de baja
-class CargaDocs(CTkToplevel):
+class CargaDocs(Toplevel):
     Previo = True
 
     def cargarDocs(self,tipo):
@@ -553,6 +553,8 @@ class UsuCon():
 
         self.botonSalir = CTkButton(master=self.almacenador, text="Salir", fg_color="#4682A9", hover_color="#91C8E4", height=40, width=117, font=("Poppins", 16),command=self.cerrar).place(x=48, y=447)
         
+        self.botonInfo = CTkButton(master=self.almacenador,text="?",anchor="e", fg_color="#4682A9", hover_color="#91C8E4", height=32, width=32, font=("Poppins", 32,"bold"),corner_radius=10)
+        self.botonInfo.place(x=1,y=1)
         self.ventana.mainloop()
 
 
@@ -622,6 +624,8 @@ class Principal():
         self.LBLogo=CTkLabel(master=self.almacenador2,text="",image=LogoP,bg_color="#4682A9").pack(pady=(38, 0), anchor="center")
         self.botonEmp = CTkButton(master=self.almacenador2  ,image=ImgEmp,text="Empleados",anchor="e", fg_color="#4682A9", hover_color="#91C8E4", height=40, width=160, font=("Poppins", 16,"bold"),corner_radius=0,command=self.Abrir).pack(anchor="center", ipady=5, pady=(16, 0))
         self.botonCerrar = CTkButton(master=self.almacenador2,image=ImgCerrar,text="Cerrar",anchor="e", fg_color="#4682A9", hover_color="#91C8E4", height=40, width=160, font=("Poppins", 16,"bold"),corner_radius=0,command=self.cerrar).pack(anchor="center", ipady=5, pady=(16, 0))
+        
+        
         
         self.ventana.mainloop()
         
