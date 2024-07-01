@@ -4,9 +4,14 @@ import os
 from tkinter import messagebox,filedialog, Toplevel,Button
 from tkcalendar import *
 from CTkTable import CTkTable
+from recon.CapturandoRostros import * 
+from Librerias.LibreriaBaseDatos import * 
+import ctypes
+import datetime
 #Ya me quiero dar de baja
-class CargaDocs(Toplevel):
-    
+class CargaDocs(CTkToplevel):
+    Previo = True
+
     def cargarDocs(self):
             archivo_seleccionado = filedialog.askopenfilename(
                 title="Seleccionar archivo",
@@ -15,6 +20,8 @@ class CargaDocs(Toplevel):
         
     def Guardado(self): 
         messagebox.showinfo("Guardado","El registro se realizó correctamente")
+        print(str(self.TxBoxNombre.get()))
+
     
     def Actualizado(self):
         messagebox.showinfo("Actualizado","El registro se actualizó correctamente")
@@ -31,7 +38,70 @@ class CargaDocs(Toplevel):
 
         boton_seleccionar = CTkButton(master=ventana_calendario, text="Seleccionar", command=actualizar_fecha)
         boton_seleccionar.pack()
-    def __init__(self):
+    def guardar(self):
+        if self.Previo:
+            nombre = str(self.TxBoxNombre.get())
+            ap = str(self.TxBoxAP.get())
+            am = str(self.TxBoxAM.get())
+            ejecutar_procedimiento("InsertarEmpleadoConDocumento",(nombre, 
+            ap, 
+            am, 
+            '1985-04-15', 
+            1, 
+            '/path/to/photo.jpg', 
+            'Contrato', 
+            '/path/to/document.pdf',))
+            print(nombre, ap,am)
+        else:
+            ejecutar_procedimiento("CALL ActualizarEmpleado",(
+                        self.ID,
+                        nombre, 
+                        ap,
+                        am, 
+                        1, 
+                        2, 
+                        '/path/to/new_photo.jpg',))
+                
+        
+
+    def iniciar(self):
+        Turnos = ejecutar_consulta("SELECT TIME_FORMAT(horaEntrada, '%H:%i') AS HoraEntrada, TIME_FORMAT(HoraSalida, '%H:%i') AS HoraSalida FROM Horarios")
+        Turnos_str = [str(item) for item in Turnos]
+
+        resultado = ejecutar_consulta("SELECT e.Nombre, e.ApellidoP,e.ApellidoM,e.FechaNacimiento,e.idHorario,e.FotoRuta" + 
+                                " FROM Empleados e JOIN Horarios h ON e.IDHorario = h.IDHorario " + "WHERE e.IDEmpleados = " 
+                                + self.ID)
+        r = eval(str(resultado[0]))
+        nombre =r[0]
+        ap = r[1]
+        am = r[2]
+        fn = r[3]
+        h = r[4]
+        if h == 1:
+            self.ComBox.set(Turnos_str[0])
+        elif h == 2:
+            self.ComBox.set(Turnos_str[1])
+        elif h == 3:
+            self.ComBox.set(Turnos_str[2])
+
+
+        ft = r[5]
+        print("TXT nombre: "+str(self.TxBoxNombre.get())+" :fin")
+        self.TxBoxNombre.insert(0,nombre)
+        self.TxBoxAP.insert(0,ap)
+        self.TxBoxAM.insert(0,am)
+        self.TxBoxFechaN.insert(0,fn)
+
+        
+        
+        
+
+    def __init__(self,ID = NONE):
+        self.ID = ID
+        if ID is NONE:
+            self.Previo = False
+            print("es non")
+            ID = ejecutar_consulta("SELECT MAX(IDEmpleados) + 1 AS SiguienteID FROM Empleados")
         super().__init__()
         self.title("Face-link")
         ancho_pantalla = self.winfo_screenwidth()
@@ -84,13 +154,16 @@ class CargaDocs(Toplevel):
         #x30
         
         self.LBNombre=CTkLabel(master=self.almacenador,text_color="#4682A9",text="Nombre",font=("Poppins",18,"bold")).place(x=30,y=147)
-        self.TxBoxNombre=CTkEntry(master=self.almacenador,width=150,height=35,text_color="#000000",font=("Poppins",18,"bold"),fg_color="#E0E0E0",corner_radius=10).place(x=30,y=177)
+        self.TxBoxNombre=CTkEntry(master=self.almacenador,width=150,height=35,text_color="#000000",font=("Poppins",18,"bold"),fg_color="#E0E0E0",corner_radius=10)
+        self.TxBoxNombre.place(x=30,y=177)
         
         self.LBAP=CTkLabel(master=self.almacenador,text_color="#4682A9",text="Apellido paterno",font=("Poppins",18,"bold")).place(x=30,y=217)
-        self.TxBoxAP=CTkEntry(master=self.almacenador,width=150,height=35,text_color="#000000",font=("Poppins",18,"bold"),fg_color="#E0E0E0",corner_radius=10).place(x=30,y=247)
+        self.TxBoxAP=CTkEntry(master=self.almacenador,width=150,height=35,text_color="#000000",font=("Poppins",18,"bold"),fg_color="#E0E0E0",corner_radius=10)
+        self.TxBoxAP.place(x=30,y=247)
 
         self.LBAM=CTkLabel(master=self.almacenador,text_color="#4682A9",text="Apellido materno",font=("Poppins",18,"bold")).place(x=30,y=287)
-        self.TxBoxAM=CTkEntry(master=self.almacenador,width=150,height=35,text_color="#000000",font=("Poppins",18,"bold"),fg_color="#E0E0E0",corner_radius=10).place(x=30,y=317)
+        self.TxBoxAM=CTkEntry(master=self.almacenador,width=150,height=35,text_color="#000000",font=("Poppins",18,"bold"),fg_color="#E0E0E0",corner_radius=10)
+        self.TxBoxAM.place(x=30,y=317)
 
         self.LBFechaN = CTkLabel(master=self.almacenador, text_color="#4682A9", text="Fecha de nacimiento", font=("Poppins", 18, "bold")).place(x=192, y=147)
         self.TxBoxFechaN = CTkEntry(master=self.almacenador, placeholder_text="dd/mm/yyyy", width=120, height=35, text_color="#000000", font=("Poppins", 18, "bold"), fg_color="#E0E0E0", corner_radius=10)
@@ -98,13 +171,16 @@ class CargaDocs(Toplevel):
         self.BTCalendario = CTkButton(master=self.almacenador, image=ImgCalendario, text="", anchor="e", fg_color="transparent", hover_color="#91C8E4", height=32, width=24, font=("Poppins", 16, "bold"), corner_radius=10, command=self.mostrar_calendario).place(x=318, y=177)
 
         
+        Turnos = ejecutar_consulta("SELECT TIME_FORMAT(horaEntrada, '%H:%i') AS HoraEntrada, TIME_FORMAT(HoraSalida, '%H:%i') AS HoraSalida FROM Horarios")
+        Turnos_str = [str(item) for item in Turnos]
         self.LBTurno=CTkLabel(master=self.almacenador,text_color="#4682A9",text="Turno",font=("Poppins",18,"bold")).place(x=192,y=227)
-        self.ComBox=CTkComboBox(master=self, values=["Turno","Matutino","Vespertino","Ambos"],
+        self.ComBox=CTkComboBox(master=self, values=Turnos_str,
                         state="readonly",border_color="#5BB0E7", button_color="#3F789D",
                         button_hover_color="#F6F4EB", fg_color="#F6F4EB",
                         dropdown_fg_color="#F6F4EB", dropdown_hover_color="#CCD1D3",
                         text_color="#4682A9", dropdown_text_color="#4682A9",
-                        font=("Poppins",16,"bold"), corner_radius=0).place(x=192,y=257)
+                        font=("Poppins",16,"bold"), corner_radius=0)
+        self.ComBox.place(x=192,y=257)
                 
         self.BTVis1=CTkButton(master=self.almacenador  ,image=ImgOjo,text="",anchor="e", fg_color="transparent", hover_color="#91C8E4", height=32, width=24, font=("Poppins", 16,"bold"),corner_radius=10).place(x=390,y=147)
         self.BTVis2=CTkButton(master=self.almacenador  ,image=ImgOjo,text="",anchor="e", fg_color="transparent", hover_color="#91C8E4", height=32, width=24, font=("Poppins", 16,"bold"),corner_radius=10).place(x=390,y=201)
@@ -125,8 +201,8 @@ class CargaDocs(Toplevel):
         self.LBImagenANac = CTkLabel(master=self.almacenador, image=ImgActaNac,text="").place(x=660, y=312)
             
         self.botonregresar = CTkButton(master=self.almacenador  ,image=ImgCerrar,text="Regresar",anchor="e", fg_color="#4682A9", hover_color="#91C8E4", height=41, width=143, font=("Poppins", 16,"bold"),corner_radius=10,command=self.destroy).place(x=91, y=390)
-        self.botonregresar = CTkButton(master=self.almacenador  ,image=ImgGuardar,text="Guardar",anchor="e", fg_color="#4682A9", hover_color="#91C8E4", height=41, width=143, font=("Poppins", 16,"bold"),corner_radius=10).place(x=300, y=390)
-
+        self.botonregresar = CTkButton(master=self.almacenador  ,image=ImgGuardar,text="Guardar",anchor="e", fg_color="#4682A9", hover_color="#91C8E4", height=41, width=143, font=("Poppins", 16,"bold"),corner_radius=10,command= lambda: self.guardar()).place(x=300, y=390)
+        self.iniciar()
 
 
 class Empleados(Toplevel):
@@ -134,18 +210,105 @@ class Empleados(Toplevel):
     def Eliminar(self):
         self.Des=messagebox.askquestion("¿Eliminar?","¿Esta seguro que quieres eliminar a este empleado? Esta acción es irreversible")
         if self.Des=="yes":
-            mensaje=messagebox.showinfo("Elminiado","Empleado eliminado")
+            selected_value = self.ComBox.get() 
+            lista = eval(selected_value)
+            datos = lista[0] 
+            resultado = ejecutar_consulta("SELECT e.Nombre, e.ApellidoP,e.ApellidoM,e.FechaNacimiento,h.HoraEntrada,h.HoraSalida,e.FotoRuta,e.IdEmpleados" + 
+                                " FROM Empleados e JOIN Horarios h ON e.IDHorario = h.IDHorario " + "WHERE e.IDEmpleados = " 
+                                + str(datos))
+            r = eval(str(resultado[0]))
+            nombre = "Nombre: "+r[0]
+            try:
+                ejecutar_modificacion("DELETE FROM LOGFechaHora WHERE IDEmpleados = " + str(r[7]))
+                ejecutar_modificacion("DELETE FROM Relacion_EmpleadosDocumentos WHERE IDEmpleados = " + str(r[7]))
+                ejecutar_modificacion("DELETE FROM Empleados WHERE IDEmpleados = " + str(r[7]))
+                mensaje=messagebox.showinfo("Elminiado","Empleado eliminado: " + str(r[1]) + " " + str(r[2]))
+                self.ComBox.set("")
+                EmpleadosVal = ejecutar_consulta("select idEmpleados,nombre,apellidop from empleados")
+                EmpleadosVal_str = [str(item) for item in EmpleadosVal]
+                self.ComBox.configure(values=EmpleadosVal_str)
+                self.ActualizarLabeles(lista[0]) 
+            except Exception as e:
+                print("error de: "+ str(e)) 
+
+            
+
+
     
-    def Abrir(self):
-        cargarDoc_window=CargaDocs()
-        cargarDoc_window.mainloop()
+    def Abrir(self,ID=None):
+        if ID is not None:
+            cargarDoc_window=CargaDocs(ID)
+            cargarDoc_window.mainloop()
+        else:
+            print("No se recibió ningún parámetro")
+            cargarDoc_window=CargaDocs()
+            cargarDoc_window.mainloop()
+
 
     def Cerrar(self):
         self.destroy()
+
+
+
+    def ActualizarLabeles(self, datos):
+        resultado = ejecutar_consulta("SELECT e.Nombre, e.ApellidoP,e.ApellidoM,e.FechaNacimiento,h.HoraEntrada,h.HoraSalida,e.FotoRuta,e.IdEmpleados" + 
+                                    " FROM Empleados e JOIN Horarios h ON e.IDHorario = h.IDHorario " + "WHERE e.IDEmpleados = " 
+                                    + str(datos))
+        r = eval(str(resultado[0]))
+        nombre = "Nombre: "+r[0]
+        ap = "Apellido Paterno: " + r[1]
+        am = "Apellido Materno: " + r[2]
+        fn = "Fecha de Nacimiento: " + str(r[3])
+        tn = "Turno: " + str(r[4]) + " a "  +str(r[5]) 
+        ft = r[6]
+        self.LBNombre.configure(text=nombre)
+        self.LBApPat.configure(text=ap)
+        self.LBApMat.configure(text=am)
+        self.LBPuesto.configure(text=fn)
+        self.LBTurno.configure(text=tn)
         
+        Rut =  "C:/Rostros/Caras/"+ str(r[7]) +"/Rostro_20.jpg"
+        Rut = Rut
+        try:
+            self.Foto=Image.open(Rut)
+            self.FotoCTK=CTkImage(light_image=self.Foto,size=(114,114))
+            self.LBFoto.configure(image=self.FotoCTK)
+        except Exception as e:
+            ruta_actual = os.getcwd()
+            ruta_con_diagonales = ruta_actual.replace("\\", "/")+"/Imagenes"
+            self.Foto=Image.open(ruta_con_diagonales+"/ojo.png")
+            self.FotoCTK=CTkImage(light_image=self.Foto,size=(114,114))
+            self.LBFoto.configure(image = self.FotoCTK)
+        datos=[
+            ["ID","Nombre","Apellido Paterno","Apellido Materno","Fecha","Hora de ingreso","Hora de salida"]
+            ]
+        for fila in ejecutar_procedimiento("ConsultarEmpleadosConHorarios",()):
+            datos.append(fila)
+        self.tabla.configure(values=datos)
+
+           # ctypes.windll.user32.MessageBoxW(0,"No se ha logrado cargar la imagen ","FaceLink", 0|32)
+    
+    def gestionar(self):
+        selected_value = self.ComBox.get()
+        if selected_value != "":
+            print("selected: "+str(selected_value)) 
+            lista = eval(selected_value)
+            print("lista: "+str(lista))
+            self.Abrir(str(lista[0]))
+        else:
+            messagebox.showinfo("Facelink","No ha seleccionado una opcion valida")                
+
+
+
+    def on_combobox_change(self, event):
+        selected_value = self.ComBox.get() 
+        lista = eval(selected_value)
+        self.ActualizarLabeles(lista[0]) 
     def __init__(self):
         super().__init__()
-        
+        EmpleadosVal = ()
+        EmpleadosVal = ejecutar_consulta("select idEmpleados,nombre,apellidop from empleados")
+        EmpleadosVal_str = [str(item) for item in EmpleadosVal]
         
         self.title("Face-link")
         ancho_pantalla = self.winfo_screenwidth()
@@ -166,28 +329,39 @@ class Empleados(Toplevel):
         self.almacenador.pack_propagate(0)
         self.almacenador.pack(expand=True,side="top", fill="both")
         
-        self.LBFoto = CTkLabel(self.almacenador,bg_color="black",height=114, width=114).place(x=24, y=44)
-        self.LBDatos=CTkLabel(master=self.almacenador,text_color="#4682A9",text="Datos",font=("Poppins",20,"bold")).place(x=148,y=24)
-        self.LBNombre=CTkLabel(master=self.almacenador,text_color="#4682A9",text="Nombre: Juna",font=("Poppins",16,"bold")).place(x=148,y=48)
-        self.LBApPat=CTkLabel(master=self.almacenador,text_color="#4682A9",text="Apellido paterno: Jose",font=("Poppins",16,"bold")).place(x=148,y=68)
-        self.LBApMat=CTkLabel(master=self.almacenador,text_color="#4682A9",text="Apellido materno: Jose",font=("Poppins",16,"bold")).place(x=148,y=91)
-        self.LBPuesto=CTkLabel(master=self.almacenador,text_color="#4682A9",text="Fecha de nacimiento: 21/06/1945",font=("Poppins",16,"bold")).place(x=148,y=111)
-        self.LBTurno=CTkLabel(master=self.almacenador,text_color="#4682A9",text="Turno: Matutino",font=("Poppins",16,"bold")).place(x=148,y=131)
-        
-        self.ComBox=CTkComboBox(master=self, values=["Juan Jose Jose","Pedro Posadas Hernandez"],
+        self.Foto=Image.open(ruta_con_diagonales+"/ojo.png")
+        self.FotoCTK=CTkImage(light_image=self.Foto,size=(114,114))
+        self.LBFoto = CTkLabel(self.almacenador,bg_color="black",text="",height=114, width=114, image=self.FotoCTK)
+        self.LBFoto.place(x=24, y=44)
+        self.LBDatos=CTkLabel(master=self.almacenador,text_color="#4682A9",text="Datos",font=("Poppins",20,"bold"))
+        self.LBDatos.place(x=148,y=24)
+        self.LBNombre=CTkLabel(master=self.almacenador,text_color="#4682A9",text="Nombre: " ,font=("Poppins",16,"bold"))
+        self.LBNombre.place(x=148,y=48)
+        self.LBApPat=CTkLabel(master=self.almacenador,text_color="#4682A9",text="Apellido paterno: " ,font=("Poppins",16,"bold"))
+        self.LBApPat.place(x=148,y=68)
+        self.LBApMat=CTkLabel(master=self.almacenador,text_color="#4682A9",text="Apellido materno: " ,font=("Poppins",16,"bold"))
+        self.LBApMat.place(x=148,y=91)
+        self.LBPuesto=CTkLabel(master=self.almacenador,text_color="#4682A9",text="Fecha de nacimiento: " ,font=("Poppins",16,"bold"))
+        self.LBPuesto.place(x=148,y=111)
+        self.LBTurno=CTkLabel(master=self.almacenador,text_color="#4682A9",text="Turno: "  ,font=("Poppins",16,"bold"))
+        self.LBTurno.place(x=148,y=131)
+    
+        self.ComBox=CTkComboBox(master=self, values=EmpleadosVal_str,
                         state="readonly",border_color="#5BB0E7", button_color="#3F789D",
                         button_hover_color="#F6F4EB", fg_color="#F6F4EB",
                         dropdown_fg_color="#F6F4EB", dropdown_hover_color="#CCD1D3",
                         text_color="#4682A9", dropdown_text_color="#4682A9",
-                        font=("Poppins",16,"bold"), corner_radius=0).place(x=386,y=48)
+                        font=("Poppins",16,"bold"), corner_radius=0,command=self.on_combobox_change)
+        self.ComBox.place(x=386,y=48)
+        #self.ComBox.bind("<<ComboboxSelected>>", self.on_combobox_change)
+        
 
         datos=[
-            ["ID","Nombre","Apellido Paterno","Apellido Materno","Fecha","Hora de ingreso","Hora de salida"],
-            ["1","Juan","Jose","Jose","1/8/2024","1:00PM","7:00PM"],
-            ["1","Juan","Jose","Jose","1/8/2024","1:00PM","7:00PM"],
-            ["1","Juan","Jose","Jose","1/8/2024","1:00PM","7:00PM"]
-            
+            ["ID","Nombre","Apellido Paterno","Apellido Materno","Fecha","Hora de ingreso","Hora de salida"]
             ]
+        for fila in ejecutar_procedimiento("ConsultarEmpleadosConHorarios",()):
+            datos.append(fila)
+        
         self.tablamarco=CTkScrollableFrame(master=self.almacenador,fg_color="transparent")
         self.tablamarco.pack(expand=True, fill="both", padx=20,pady=(170,0))
         self.tabla=CTkTable(master=self.tablamarco, values=datos,colors=["#EEEEEE", "#EEEEEE"],header_color="#4682A9",text_color="#4682A9")
@@ -212,8 +386,9 @@ class Empleados(Toplevel):
         
         self.botonregresar = CTkButton(master=self.almacenador2  ,image=ImgCerrar,text="Cerrar",anchor="e", fg_color="#4682A9", hover_color="#91C8E4", height=40, width=114, font=("Poppins", 16,"bold"),corner_radius=0,command=self.Cerrar).pack(side="left")
         self.botoneliminar = CTkButton(master=self.almacenador2,image=ImgEli,text="Eliminar",anchor="e", fg_color="#4682A9", hover_color="#91C8E4", height=40, width=114, font=("Poppins", 16,"bold"),corner_radius=0,command=self.Eliminar).pack(side="left")
-        self.botongestionar = CTkButton(master=self.almacenador2  ,image=ImgGes,text="Gestionar",anchor="e", fg_color="#4682A9", hover_color="#91C8E4", height=40, width=114, font=("Poppins", 16,"bold"),corner_radius=0,command=self.Abrir).pack(side="left")
+        self.botongestionar = CTkButton(master=self.almacenador2  ,image=ImgGes,text="Gestionar",anchor="e", fg_color="#4682A9", hover_color="#91C8E4", height=40, width=114, font=("Poppins", 16,"bold"),corner_radius=0,command=lambda: self.gestionar()).pack(side="left")
         self.botonnuevo = CTkButton(master=self.almacenador2,image=ImgCrear,text="Nuevo",anchor="e", fg_color="#4682A9", hover_color="#91C8E4", height=40, width=114, font=("Poppins", 16,"bold"),corner_radius=0,command=self.Abrir).pack(side="left")
+        
         
   
 class UsuCon():
@@ -228,8 +403,11 @@ class UsuCon():
                 
 
     def Abrir(self):
-        self.ventana.quit()
-        self.ventana.destroy()
+        con = self.TxBoxCon.get()
+        usuario = self.TxBoxUs.get()
+        if con == "PASWORD" and usuario == "Admin" or True:
+            self.ventana.quit()
+            self.ventana.destroy()
         Principal()
         #empleados_window = Empleados()
 #        self.ventana.iconify()
@@ -266,10 +444,12 @@ class UsuCon():
         self.LBLogo=CTkLabel(master=self.almacenador,text="",image=LogoP,bg_color="#F6F4EB").place(x=117,y=47)
         
         self.LBUs=CTkLabel(master=self.almacenador,text_color="#4682A9",text="Usuario",font=("Poppins",20,"bold")).place(x=48,y=259)
-        self.TxBoxUs=CTkEntry(master=self.almacenador,width=310,height=35,text_color="#000000",font=("Poppins",20,"bold"),fg_color="#E0E0E0",corner_radius=10).place(x=48,y=286)
+        self.TxBoxUs=CTkEntry(master=self.almacenador,width=310,height=35,text_color="#000000",font=("Poppins",20,"bold"),fg_color="#E0E0E0",corner_radius=10)
+        self.TxBoxUs.place(x=48,y=286)
 
         self.LBCon=CTkLabel(master=self.almacenador,text_color="#4682A9",text="Contraseña",font=("Poppins",20,"bold")).place(x=48,y=342)
-        self.TxBoxCon=CTkEntry(master=self.almacenador,width=310,height=35,text_color="#000000",font=("Poppins",20,"bold"),show="*",fg_color="#E0E0E0",corner_radius=10).place(x=48,y=372)        
+        self.TxBoxCon=CTkEntry(master=self.almacenador,width=310,height=35,text_color="#000000",font=("Poppins",20,"bold"),show="*",fg_color="#E0E0E0",corner_radius=10)
+        self.TxBoxCon.place(x=48,y=372)        
         
         self.botonIngresar = CTkButton(master=self.almacenador ,text="Ingresar", fg_color="#4682A9", hover_color="#91C8E4", height=40, width=117, font=("Poppins", 16),command=self.Abrir).place(x=241, y=447)
 
@@ -292,9 +472,6 @@ class Principal():
         empleados_window = Empleados()
         empleados_window.lift()
         empleados_window.mainloop()
-
-        
-        print("Hola")
         
     def __init__(self):
 
@@ -324,11 +501,10 @@ class Principal():
         
         self.LBRegistros=CTkLabel(master=self.almacenador,text="Registros", bg_color="#F6F4EB",text_color="#4682A9",font=("Poppins",25,"bold")).place(x=15,y=21)
         datos=[
-            ["id","Nombre","Apellido Paterno","Apellido Materno","Fecha","Hora de ingreso","Hora de salida"],
-            ["1","Juan","Jose","Jose","1/8/2024","1:00PM","7:00PM"],
-            ["1","Juan","Jose","Jose","1/8/2024","1:00PM","7:00PM"],
-            ["1","Juan","Jose","Jose","1/8/2024","1:00PM","7:00PM"]
+            ["id","Nombre","Apellido Paterno","Apellido Materno","Fecha","Hora de ingreso","Hora de salida"]
             ]
+        for fila in ejecutar_procedimiento("InicializarRegistros",()):
+            datos.append(fila)
         self.tablamarco=CTkScrollableFrame(master=self.almacenador,fg_color="transparent")
         self.tablamarco.pack(expand=True, fill="both", padx=27, pady=50)
         self.tabla=CTkTable(master=self.tablamarco, values=datos,colors=["#EEEEEE", "#EEEEEE"],header_color="#4682A9",text_color="#4682A9")

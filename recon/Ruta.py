@@ -1,1 +1,0 @@
-RutaArchivos = "recon/"

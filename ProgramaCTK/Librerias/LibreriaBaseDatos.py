@@ -1,4 +1,4 @@
-import mysql.connector
+import mysql.connector 
 from mysql.connector import *
 
 def conectar_mysql(host, database, usuario, contraseña):
@@ -39,6 +39,8 @@ def ejecutar_consulta(consulta):
             print("La conexión MySQL se ha cerrado")
 
 
+
+
             
 def ejecutar_procedimiento(procedimiento, args=None):
     conexion = conectar_mysql('localhost', 'FaceLink', 'root', '')
@@ -71,9 +73,44 @@ def ejecutar_procedimiento(procedimiento, args=None):
        # for fila in ejecutar_consulta("select * from empleados"):
         #    datos.append(fila)
 #Procedimiento
-for fila in ejecutar_procedimiento("ObtenerDatosEmpleados",()):
-    print(fila)
+#for fila in ejecutar_procedimiento("ObtenerDatosEmpleados",()):
+#    print(fila)
         #Procedimiento con argunmento
-args = (1,)
-for fila in ejecutar_procedimiento("IniciarEmpleado",(1,)):
-    print(fila)
+#args = (1,)
+#for fila in ejecutar_procedimiento("IniciarEmpleado",(1,)):
+#    print(fila)
+
+
+
+def ejecutar_modificacion(modificacion):
+    connection = conectar_mysql('localhost', 'FaceLink', 'root', '')
+    try:
+        if connection.is_connected():
+            cursor = connection.cursor()
+            cursor.execute(modificacion)
+            connection.commit()  # Para asegurar que los cambios se apliquen
+
+            # Devuelve el número de filas afectadas por la operación
+            num_filas_afectadas = cursor.rowcount
+            return num_filas_afectadas
+
+    except Error as e:
+        print(f"Error al ejecutar la modificación: {e}")
+        return 0  # En caso de error, retornar 0 o manejar según necesidad
+
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
+            print("La conexión MySQL se ha cerrado")
+
+
+
+# ejecutar_procedimiento("InsertarEmpleadoConDocumento",('Juan', 
+#     'Perez', 
+#     'Lopez', 
+#     '1985-04-15', 
+#     1, 
+#     '/path/to/photo.jpg', 
+#     'Contrato', 
+#     '/path/to/document.pdf',))
