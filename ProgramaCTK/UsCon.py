@@ -1,3 +1,4 @@
+import shutil
 from customtkinter import *
 from PIL import Image   
 import os
@@ -12,86 +13,159 @@ import datetime
 class CargaDocs(CTkToplevel):
     Previo = True
 
-    def cargarDocs(self):
-            archivo_seleccionado = filedialog.askopenfilename(
-                title="Seleccionar archivo",
-                filetypes=(("Archivo PDF", ".pdf"), ("Todos los archivos", ".*"))) 
-            mensaje=messagebox.showinfo("Guardado","El archivo se guardó correctamente")
+    def cargarDocs(self,tipo):
+        ID = self.ID
+        # Obtener el nombre de usuario
+        username = os.getlogin()
         
+        # Crear la ruta de la carpeta destino
+        datos = ejecutar_consulta(f"select nombre,apellidop from empleados where idEmpleados = {str(ID)}")
+        destino_carpeta = f"C:/Users/{username}/Documents/Documentos Empleados/{ID} " + str(datos[0][0]) + " " + str(datos[0][1])
+        
+        # Crear la carpeta si no existe
+        if not os.path.exists(destino_carpeta):
+            os.makedirs(destino_carpeta)
+            
+        # Pedir al usuario que seleccione un archivo
+        archivo_seleccionado = filedialog.askopenfilename(
+            title="Seleccionar archivo",
+            filetypes=(("Archivo PDF", ".pdf"), ("Todos los archivos", ".*")))
+        
+        # Verificar si se seleccionó un archivo
+        if archivo_seleccionado:
+            # Copiar el archivo seleccionado a la carpeta destino
+            archivo_nombre = os.path.basename(archivo_seleccionado)
+            destino_archivo = os.path.join(destino_carpeta, archivo_nombre)
+            try:
+                shutil.copy2(archivo_seleccionado, destino_archivo)
+                ruta = (str(destino_archivo) + str(archivo_seleccionado))
+                messagebox.showinfo("Guardado", "El archivo se guardó correctamente")
+                ejecutar_modificacion(f"INSERT INTO Documentos (Tipo, Ruta) VALUES ('{tipo}','{ruta}')")
+                iddocumentos = str(ejecutar_consulta("SELECT max(IDDocumentos) from documentos")[0][0])
+                print("IDdoc " + str(iddocumentos))
+                ejecutar_modificacion(f"INSERT INTO Relacion_EmpleadosDocumentos (IDDocumentos, IDEmpleados) VALUES ({str(iddocumentos)},{self.ID})")
+            except Exception as e:
+                messagebox.showinfo("Facelink Error:","Error: " + str(e))
+            
+            # Mostrar mensaje de confirmación
+           
+        else:  
+            messagebox.showinfo("No Guardado", "No se ha guardado ningun archivo")
+    
+
+
     def Guardado(self): 
         messagebox.showinfo("Guardado","El registro se realizó correctamente")
-        print(str(self.TxBoxNombre.get()))
 
     
     def Actualizado(self):
         messagebox.showinfo("Actualizado","El registro se actualizó correctamente")
         
     def mostrar_calendario(self):
+        self.TxBoxFechaN.configure(state='normal')
         ventana_calendario = Toplevel(self)
-        calendario = Calendar(ventana_calendario, selectmode='day', date_pattern='dd/mm/yyyy')
+        calendario = Calendar(ventana_calendario, selectmode='day', date_pattern='yyyy-mm-dd')
         calendario.pack()
 
         def actualizar_fecha():
             fecha_seleccionada = calendario.get_date()
             self.TxBoxFechaN.delete(0, "end")
             self.TxBoxFechaN.insert(0, fecha_seleccionada)
+            self.TxBoxFechaN.configure(state="disabled")
 
         boton_seleccionar = CTkButton(master=ventana_calendario, text="Seleccionar", command=actualizar_fecha)
         boton_seleccionar.pack()
+    
+    def saberHorario(self):
+        r = ""
+        h = str(self.ComBox.get())
+        if h == "['08:00', '14:00']":
+            r = "1"
+        elif h == "['14:00', '21:00']":
+            r = "2"
+        elif h == "['08:00', '21:00']":
+            r = "3"
+        return r
+        
+
     def guardar(self):
-        if self.Previo:
-            nombre = str(self.TxBoxNombre.get())
-            ap = str(self.TxBoxAP.get())
-            am = str(self.TxBoxAM.get())
-            ejecutar_procedimiento("InsertarEmpleadoConDocumento",(nombre, 
-            ap, 
-            am, 
-            '1985-04-15', 
-            1, 
-            '/path/to/photo.jpg', 
-            'Contrato', 
-            '/path/to/document.pdf',))
-            print(nombre, ap,am)
+        id = "IDG " + str(self.ID)
+        nombre = str(self.TxBoxNombre.get())
+        ap = str(self.TxBoxAP.get())
+        am = str(self.TxBoxAM.get())
+        fn = str(self.TxBoxFechaN.get())
+        h = self.saberHorario()
+        Rut =  "C:/Rostros/Caras/"+ str(self.ID)
+        ft = Rut +"/Rostro_20.jpg" 
+        if id and nombre and ap and am and fn and h and ft:
+            if self.Previo:
+                #si se le dio un ID (osease si estas editando un usuario)
+                n = (str(ejecutar_modificacion(f"UPDATE Empleados SET Nombre = '{nombre}',ApellidoP = '{ap}',ApellidoM = '{am}',FechaNacimiento = '{fn}',IDHorario = {h} ,FotoRuta = '{ft}' WHERE IDEmpleados = {id}")))
+                if str(n) == "1":
+
+                    messagebox.showinfo("FaceLink dice:","Guardado con exito!")
+                     
+                else:
+                     messagebox.showinfo("FaceLink dice:","Error, no se ha guardado nada!")
+            else:
+                #si es nuevo user
+                Rut =  "C:/Rostros/Caras/"+ str(ejecutar_consulta("select Auto_increment from information_schema.Tables where table_name = 'empleados'")[0][0])
+                if os.path.isdir(Rut):
+                    n = (str(ejecutar_modificacion(f"INSERT INTO Empleados (Nombre, ApellidoP, ApellidoM, FechaNacimiento, IDHorario,fotoruta) VALUES ('{nombre}', '{ap}', '{am}', '{fn}', {h} , '{ft}')")))
+                    if str(n) == "1":
+                        messagebox.showinfo("FaceLink dice:","Guardado con exito!")
+                    else:
+                        messagebox.showinfo("FaceLink dice:","Error, no se ha guardado nada!")
+                else: 
+                    Des=messagebox.askquestion("Sin Foto:","No hay registro de rostro ¿Desea guardar asi?")
+                    if Des == "yes":
+                        n = (str(ejecutar_modificacion(f"INSERT INTO Empleados (Nombre, ApellidoP, ApellidoM, FechaNacimiento, IDHorario,fotoruta) VALUES ('{nombre}', '{ap}', '{am}', '{fn}', {h} , '{ft}')")))
+                        if str(n) == "1":
+                            messagebox.showinfo("FaceLink dice:","Guardado con exito!")
+                    else:
+                        self.Escanear()
+                        n = (str(ejecutar_modificacion(f"INSERT INTO Empleados (Nombre, ApellidoP, ApellidoM, FechaNacimiento, IDHorario,fotoruta) VALUES ('{nombre}', '{ap}', '{am}', '{fn}', {h} , '{ft}')")))
+                        if str(n) == "1":
+                            messagebox.showinfo("FaceLink dice:","Guardado con exito!")
+
+       
         else:
-            ejecutar_procedimiento("CALL ActualizarEmpleado",(
-                        self.ID,
-                        nombre, 
-                        ap,
-                        am, 
-                        1, 
-                        2, 
-                        '/path/to/new_photo.jpg',))
-                
+            messagebox.showinfo("FaceLink dice:","Falta alguno de los datos!")
         
 
     def iniciar(self):
         Turnos = ejecutar_consulta("SELECT TIME_FORMAT(horaEntrada, '%H:%i') AS HoraEntrada, TIME_FORMAT(HoraSalida, '%H:%i') AS HoraSalida FROM Horarios")
         Turnos_str = [str(item) for item in Turnos]
+        if self.Previo == True:
+            resultado = ejecutar_consulta("SELECT e.Nombre, e.ApellidoP,e.ApellidoM,e.FechaNacimiento,e.idHorario,e.FotoRuta" + 
+                                    " FROM Empleados e JOIN Horarios h ON e.IDHorario = h.IDHorario " + "WHERE e.IDEmpleados = " 
+                                    + self.ID)
+            r = eval(str(resultado[0]))
+            nombre =r[0]
+            ap = r[1]
+            am = r[2]
+            fn = r[3]
+            h = r[4]
+            if h == 1:
+                self.ComBox.set(Turnos_str[0])
+            elif h == 2:
+                self.ComBox.set(Turnos_str[1])
+            elif h == 3:
+                self.ComBox.set(Turnos_str[2])
 
-        resultado = ejecutar_consulta("SELECT e.Nombre, e.ApellidoP,e.ApellidoM,e.FechaNacimiento,e.idHorario,e.FotoRuta" + 
-                                " FROM Empleados e JOIN Horarios h ON e.IDHorario = h.IDHorario " + "WHERE e.IDEmpleados = " 
-                                + self.ID)
-        r = eval(str(resultado[0]))
-        nombre =r[0]
-        ap = r[1]
-        am = r[2]
-        fn = r[3]
-        h = r[4]
-        if h == 1:
-            self.ComBox.set(Turnos_str[0])
-        elif h == 2:
-            self.ComBox.set(Turnos_str[1])
-        elif h == 3:
-            self.ComBox.set(Turnos_str[2])
-
-
-        ft = r[5]
-        print("TXT nombre: "+str(self.TxBoxNombre.get())+" :fin")
-        self.TxBoxNombre.insert(0,nombre)
-        self.TxBoxAP.insert(0,ap)
-        self.TxBoxAM.insert(0,am)
-        self.TxBoxFechaN.insert(0,fn)
-
+            ft = r[5]
+            self.TxBoxNombre.insert(0,nombre)
+            self.TxBoxAP.insert(0,ap)
+            self.TxBoxAM.insert(0,am)
+            self.TxBoxFechaN.configure(state='normal')
+            self.TxBoxFechaN.insert(0,fn)
+            self.TxBoxFechaN.configure(state='disabled')
+    def Escanear(self):
+        if self.Previo:
+            id = self.ID
+            Capturar(id)
+        else:
+            Capturar(str(ejecutar_consulta("select Auto_increment from information_schema.Tables where table_name = 'empleados'")[0][0]))
         
         
         
@@ -100,8 +174,8 @@ class CargaDocs(CTkToplevel):
         self.ID = ID
         if ID is NONE:
             self.Previo = False
-            print("es non")
-            ID = ejecutar_consulta("SELECT MAX(IDEmpleados) + 1 AS SiguienteID FROM Empleados")
+            self.ID = str(ejecutar_consulta("select Auto_increment from information_schema.Tables where table_name = 'empleados'")[0][0])
+
         super().__init__()
         self.title("Face-link")
         ancho_pantalla = self.winfo_screenwidth()
@@ -146,11 +220,11 @@ class CargaDocs(CTkToplevel):
         self.almacenador.pack(expand=True,side="bottom", fill="both")
         
         self.LBFoto = CTkLabel(self.almacenador,bg_color="black",text="",height=114, width=114).place(x=150, y=23)
-        self.BTEscanear=CTkButton(master=self.almacenador  ,image=ImgEscane,text="Escanear rostro",anchor="e", fg_color="#4682A9", hover_color="#91C8E4", height=36, width=143, font=("Poppins", 16,"bold"),corner_radius=10).place(x=280,y=61)
-        self.BTSubirINE=CTkButton(master=self.almacenador  ,image=ImgPDF,text="Subir documento",anchor="", fg_color="#4682A9", hover_color="#91C8E4", height=36, width=143, font=("Poppins", 16,"bold"),corner_radius=10,command=self.cargarDocs).place(x=450,y=147)
-        self.BTSubirCartaRec=CTkButton(master=self.almacenador  ,image=ImgPDF,text="Subir documento",anchor="e", fg_color="#4682A9", hover_color="#91C8E4", height=36, width=143, font=("Poppins", 16,"bold"),corner_radius=10,command=self.cargarDocs).place(x=450,y=201)
-        self.BTSubirCURP=CTkButton(master=self.almacenador  ,image=ImgPDF,text="Subir documento",anchor="e", fg_color="#4682A9", hover_color="#91C8E4", height=36, width=143, font=("Poppins", 16,"bold"),corner_radius=10,command=self.cargarDocs).place(x=450,y=254)
-        self.BTActaNac=CTkButton(master=self.almacenador  ,image=ImgPDF,text="Subir documento",anchor="e", fg_color="#4682A9", hover_color="#91C8E4", height=36, width=143, font=("Poppins", 16,"bold"),corner_radius=10,command=self.cargarDocs).place(x=450,y=305)
+        self.BTEscanear=CTkButton(master=self.almacenador  ,image=ImgEscane,text="Escanear rostro",anchor="e", fg_color="#4682A9", hover_color="#91C8E4", height=36, width=143, font=("Poppins", 16,"bold"),corner_radius=10,command= lambda: self.Escanear()).place(x=280,y=61)
+        self.BTSubirINE=CTkButton(master=self.almacenador  ,image=ImgPDF,text="Subir documento",anchor="", fg_color="#4682A9", hover_color="#91C8E4", height=36, width=143, font=("Poppins", 16,"bold"),corner_radius=10,command=lambda: self.cargarDocs("INE")).place(x=450,y=147)
+        self.BTSubirCartaRec=CTkButton(master=self.almacenador  ,image=ImgPDF,text="Subir documento",anchor="e", fg_color="#4682A9", hover_color="#91C8E4", height=36, width=143, font=("Poppins", 16,"bold"),corner_radius=10,command=lambda: self.cargarDocs("carta de recomendacion")).place(x=450,y=201)
+        self.BTSubirCURP=CTkButton(master=self.almacenador  ,image=ImgPDF,text="Subir documento",anchor="e", fg_color="#4682A9", hover_color="#91C8E4", height=36, width=143, font=("Poppins", 16,"bold"),corner_radius=10,command=lambda: self.cargarDocs("CURP")).place(x=450,y=254)
+        self.BTActaNac=CTkButton(master=self.almacenador  ,image=ImgPDF,text="Subir documento",anchor="e", fg_color="#4682A9", hover_color="#91C8E4", height=36, width=143, font=("Poppins", 16,"bold"),corner_radius=10,command=lambda: self.cargarDocs("Acta de nacimiento")).place(x=450,y=305)
         #x30
         
         self.LBNombre=CTkLabel(master=self.almacenador,text_color="#4682A9",text="Nombre",font=("Poppins",18,"bold")).place(x=30,y=147)
@@ -166,9 +240,10 @@ class CargaDocs(CTkToplevel):
         self.TxBoxAM.place(x=30,y=317)
 
         self.LBFechaN = CTkLabel(master=self.almacenador, text_color="#4682A9", text="Fecha de nacimiento", font=("Poppins", 18, "bold")).place(x=192, y=147)
-        self.TxBoxFechaN = CTkEntry(master=self.almacenador, placeholder_text="dd/mm/yyyy", width=120, height=35, text_color="#000000", font=("Poppins", 18, "bold"), fg_color="#E0E0E0", corner_radius=10)
+        self.TxBoxFechaN = CTkEntry(master=self.almacenador,state='disabled', placeholder_text="yy-mm-yyyy", width=120, height=35, text_color="#000000", font=("Poppins", 18, "bold"), fg_color="#E0E0E0", corner_radius=10)
         self.TxBoxFechaN.place(x=192, y=177)
-        self.BTCalendario = CTkButton(master=self.almacenador, image=ImgCalendario, text="", anchor="e", fg_color="transparent", hover_color="#91C8E4", height=32, width=24, font=("Poppins", 16, "bold"), corner_radius=10, command=self.mostrar_calendario).place(x=318, y=177)
+        self.BTCalendario = CTkButton(master=self.almacenador, image=ImgCalendario, text="", anchor="e", fg_color="transparent", hover_color="#91C8E4", height=32, width=24, font=("Poppins", 16, "bold"), corner_radius=10,command=self.mostrar_calendario)
+        self.BTCalendario.place(x=318, y=177)
 
         
         Turnos = ejecutar_consulta("SELECT TIME_FORMAT(horaEntrada, '%H:%i') AS HoraEntrada, TIME_FORMAT(HoraSalida, '%H:%i') AS HoraSalida FROM Horarios")
@@ -208,6 +283,11 @@ class CargaDocs(CTkToplevel):
 class Empleados(Toplevel):
     
     def Eliminar(self):
+        def borrar_carpeta(ruta):
+            if os.path.isdir(ruta):
+                shutil.rmtree(ruta)
+            else:
+                print(f"La carpeta '{ruta}' no existe.")
         self.Des=messagebox.askquestion("¿Eliminar?","¿Esta seguro que quieres eliminar a este empleado? Esta acción es irreversible")
         if self.Des=="yes":
             selected_value = self.ComBox.get() 
@@ -219,9 +299,17 @@ class Empleados(Toplevel):
             r = eval(str(resultado[0]))
             nombre = "Nombre: "+r[0]
             try:
+                # ID = str(r[7])
+                # username = os.getlogin()
+                # datos = ejecutar_consulta(f"select nombre,apellidop from empleados where idEmpleados = {str(ID)}")
+                # destino_carpeta = f"C:/Users/{username}/Documents/Documentos Empleados/{ID} " + str(datos[0][0]) + " " + str(datos[0][1])
+                
                 ejecutar_modificacion("DELETE FROM LOGFechaHora WHERE IDEmpleados = " + str(r[7]))
                 ejecutar_modificacion("DELETE FROM Relacion_EmpleadosDocumentos WHERE IDEmpleados = " + str(r[7]))
                 ejecutar_modificacion("DELETE FROM Empleados WHERE IDEmpleados = " + str(r[7]))
+                ejecutar_modificacion("DELETE FROM Documentos WHERE IDDocumentos NOT IN (SELECT IDDocumentos FROM Relacion_EmpleadosDocumentos)")
+                ruta = "C:/Rostros/Caras/" + str(r[7])
+                borrar_carpeta(ruta)
                 mensaje=messagebox.showinfo("Elminiado","Empleado eliminado: " + str(r[1]) + " " + str(r[2]))
                 self.ComBox.set("")
                 EmpleadosVal = ejecutar_consulta("select idEmpleados,nombre,apellidop from empleados")
@@ -240,7 +328,6 @@ class Empleados(Toplevel):
             cargarDoc_window=CargaDocs(ID)
             cargarDoc_window.mainloop()
         else:
-            print("No se recibió ningún parámetro")
             cargarDoc_window=CargaDocs()
             cargarDoc_window.mainloop()
 
@@ -251,11 +338,12 @@ class Empleados(Toplevel):
 
 
     def ActualizarLabeles(self, datos):
+        id = str(datos)
         resultado = ejecutar_consulta("SELECT e.Nombre, e.ApellidoP,e.ApellidoM,e.FechaNacimiento,h.HoraEntrada,h.HoraSalida,e.FotoRuta,e.IdEmpleados" + 
                                     " FROM Empleados e JOIN Horarios h ON e.IDHorario = h.IDHorario " + "WHERE e.IDEmpleados = " 
                                     + str(datos))
         r = eval(str(resultado[0]))
-        nombre = "Nombre: "+r[0]
+        nombre = "Nombre: "+ r[0]
         ap = "Apellido Paterno: " + r[1]
         am = "Apellido Materno: " + r[2]
         fn = "Fecha de Nacimiento: " + str(r[3])
@@ -266,6 +354,7 @@ class Empleados(Toplevel):
         self.LBApMat.configure(text=am)
         self.LBPuesto.configure(text=fn)
         self.LBTurno.configure(text=tn)
+        self.tabla.configure(values=self.iniciartabla(id))
         
         Rut =  "C:/Rostros/Caras/"+ str(r[7]) +"/Rostro_20.jpg"
         Rut = Rut
@@ -279,21 +368,26 @@ class Empleados(Toplevel):
             self.Foto=Image.open(ruta_con_diagonales+"/ojo.png")
             self.FotoCTK=CTkImage(light_image=self.Foto,size=(114,114))
             self.LBFoto.configure(image = self.FotoCTK)
-        datos=[
-            ["ID","Nombre","Apellido Paterno","Apellido Materno","Fecha","Hora de ingreso","Hora de salida"]
-            ]
-        for fila in ejecutar_procedimiento("ConsultarEmpleadosConHorarios",()):
-            datos.append(fila)
-        self.tabla.configure(values=datos)
+        
+
+    def iniciartabla(self,id = None):
+        if id == None:
+            datos=[["Fecha","Hora de ingreso","Hora de salida","Retardo"],["NULL","NULL","NULL","NULL"]]
+            
+            return datos
+        else:
+            datos=[["Fecha","Hora de ingreso","Hora de salida","Retardo","s"]]
+            for fila in ejecutar_consulta(f"SELECT l.Fecha, l.Hora AS HoraIngreso, (SELECT Hora FROM LOGFechaHora l2 WHERE l2.IDEmpleados = l.IDEmpleados AND l2.Fecha = l.Fecha AND l2.Entrada = 0 LIMIT 1) AS HoraSalida, CASE WHEN TIMESTAMPDIFF(MINUTE, h.HoraEntrada, l.Hora) > 15 THEN 'Retardo' ELSE 'A tiempo' END AS Estado FROM LOGFechaHora l JOIN Empleados e ON l.IDEmpleados = e.IDEmpleados JOIN Horarios h ON e.IDHorario = h.IDHorario WHERE l.IDEmpleados = {id} AND l.Entrada = 1"):
+                datos.append(fila)
+            return datos
+        
 
            # ctypes.windll.user32.MessageBoxW(0,"No se ha logrado cargar la imagen ","FaceLink", 0|32)
     
     def gestionar(self):
         selected_value = self.ComBox.get()
         if selected_value != "":
-            print("selected: "+str(selected_value)) 
             lista = eval(selected_value)
-            print("lista: "+str(lista))
             self.Abrir(str(lista[0]))
         else:
             messagebox.showinfo("Facelink","No ha seleccionado una opcion valida")                
@@ -303,7 +397,11 @@ class Empleados(Toplevel):
     def on_combobox_change(self, event):
         selected_value = self.ComBox.get() 
         lista = eval(selected_value)
-        self.ActualizarLabeles(lista[0]) 
+        self.ActualizarLabeles(lista[0])
+        EmpleadosVal = ()
+        EmpleadosVal = ejecutar_consulta("select idEmpleados,nombre,apellidop from empleados")
+        EmpleadosVal_str = [str(item) for item in EmpleadosVal]
+        self.ComBox.configure(values = EmpleadosVal_str)
     def __init__(self):
         super().__init__()
         EmpleadosVal = ()
@@ -356,15 +454,15 @@ class Empleados(Toplevel):
         #self.ComBox.bind("<<ComboboxSelected>>", self.on_combobox_change)
         
 
-        datos=[
-            ["ID","Nombre","Apellido Paterno","Apellido Materno","Fecha","Hora de ingreso","Hora de salida"]
-            ]
-        for fila in ejecutar_procedimiento("ConsultarEmpleadosConHorarios",()):
-            datos.append(fila)
+        # datos=[
+        #     ["ID","Nombre","Apellido Paterno","Apellido Materno","Fecha","Hora de ingreso","Hora de salida"]
+        #     ]
+        # for fila in ejecutar_procedimiento("ConsultarEmpleadosConHorarios",()):
+        #     datos.append(fila) 
         
         self.tablamarco=CTkScrollableFrame(master=self.almacenador,fg_color="transparent")
         self.tablamarco.pack(expand=True, fill="both", padx=20,pady=(170,0))
-        self.tabla=CTkTable(master=self.tablamarco, values=datos,colors=["#EEEEEE", "#EEEEEE"],header_color="#4682A9",text_color="#4682A9")
+        self.tabla=CTkTable(master=self.tablamarco, values=self.iniciartabla(),colors=["#EEEEEE", "#EEEEEE"],header_color="#4682A9",text_color="#4682A9")
         self.tabla.edit_row(0, text_color="#F6F4EB", hover_color="#2A8C55")
         self.tabla.pack(expand=True)
         
