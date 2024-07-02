@@ -6,9 +6,12 @@ from tkinter import messagebox,filedialog, Toplevel,Button
 from tkcalendar import *
 from CTkTable import CTkTable
 from recon.CapturandoRostros import * 
+from recon.ReconocimeintoFacial import *
 from Librerias.LibreriaBaseDatos import * 
 import ctypes
 import datetime
+import webbrowser
+
 #Ya me quiero dar de baja
 class CargaDocs(Toplevel):
     Previo = True
@@ -35,10 +38,13 @@ class CargaDocs(Toplevel):
         if archivo_seleccionado:
             # Copiar el archivo seleccionado a la carpeta destino
             archivo_nombre = os.path.basename(archivo_seleccionado)
-            destino_archivo = os.path.join(destino_carpeta, archivo_nombre)
+            #destino_archivo = os.path.join(destino_carpeta, archivo_nombre)
+            destino_archivo = os.path.join(destino_carpeta, tipo + ".pdf")
             try:
                 shutil.copy2(archivo_seleccionado, destino_archivo)
-                ruta = (str(destino_archivo) + str(archivo_seleccionado))
+                ruta = (str(destino_archivo))
+                ruta = ruta.replace("\\", "/")
+                print(ruta)
                 messagebox.showinfo("Guardado", "El archivo se guardó correctamente")
                 ejecutar_modificacion(f"INSERT INTO Documentos (Tipo, Ruta) VALUES ('{tipo}','{ruta}')")
                 iddocumentos = str(ejecutar_consulta("SELECT max(IDDocumentos) from documentos")[0][0])
@@ -85,11 +91,12 @@ class CargaDocs(Toplevel):
             r = "2"
         elif h == "['08:00', '21:00']":
             r = "3"
+        print("IDHORARIOR:" + r + ":")
         return r
         
 
     def guardar(self):
-        id = "IDG " + str(self.ID)
+        id = str(self.ID)
         nombre = str(self.TxBoxNombre.get())
         ap = str(self.TxBoxAP.get())
         am = str(self.TxBoxAM.get())
@@ -104,6 +111,7 @@ class CargaDocs(Toplevel):
                 if str(n) == "1":
 
                     messagebox.showinfo("FaceLink dice:","Guardado con exito!")
+                    self.destroy()
                      
                 else:
                      messagebox.showinfo("FaceLink dice:","Error, no se ha guardado nada!")
@@ -114,6 +122,7 @@ class CargaDocs(Toplevel):
                     n = (str(ejecutar_modificacion(f"INSERT INTO Empleados (Nombre, ApellidoP, ApellidoM, FechaNacimiento, IDHorario,fotoruta) VALUES ('{nombre}', '{ap}', '{am}', '{fn}', {h} , '{ft}')")))
                     if str(n) == "1":
                         messagebox.showinfo("FaceLink dice:","Guardado con exito!")
+                        self.destroy()
                     else:
                         messagebox.showinfo("FaceLink dice:","Error, no se ha guardado nada!")
                 else: 
@@ -122,11 +131,13 @@ class CargaDocs(Toplevel):
                         n = (str(ejecutar_modificacion(f"INSERT INTO Empleados (Nombre, ApellidoP, ApellidoM, FechaNacimiento, IDHorario,fotoruta) VALUES ('{nombre}', '{ap}', '{am}', '{fn}', {h} , '{ft}')")))
                         if str(n) == "1":
                             messagebox.showinfo("FaceLink dice:","Guardado con exito!")
+                            self.destroy()
                     else:
                         self.Escanear()
                         n = (str(ejecutar_modificacion(f"INSERT INTO Empleados (Nombre, ApellidoP, ApellidoM, FechaNacimiento, IDHorario,fotoruta) VALUES ('{nombre}', '{ap}', '{am}', '{fn}', {h} , '{ft}')")))
                         if str(n) == "1":
                             messagebox.showinfo("FaceLink dice:","Guardado con exito!")
+                            self.destroy()
 
        
         else:
@@ -160,6 +171,20 @@ class CargaDocs(Toplevel):
             self.TxBoxFechaN.configure(state='normal')
             self.TxBoxFechaN.insert(0,fn)
             self.TxBoxFechaN.configure(state='disabled')
+                    
+            Rut =  "C:/Rostros/Caras/"+ self.ID +"/Rostro_20.jpg"
+            Rut = Rut
+            try:
+                self.Foto=Image.open(Rut)
+                self.FotoCTK=CTkImage(light_image=self.Foto,size=(114,114))
+                self.LBFoto.configure(image=self.FotoCTK)
+            except Exception as e:
+                ruta_actual = os.getcwd()
+                ruta_con_diagonales = ruta_actual.replace("\\", "/")+"/Imagenes"
+                self.Foto=Image.open(ruta_con_diagonales+"/ojo.png")
+                self.FotoCTK=CTkImage(light_image=self.Foto,size=(114,114))
+                self.LBFoto.configure(image = self.FotoCTK)
+
     def Escanear(self):
         if self.Previo:
             id = self.ID
@@ -168,7 +193,19 @@ class CargaDocs(Toplevel):
             Capturar(str(ejecutar_consulta("select Auto_increment from information_schema.Tables where table_name = 'empleados'")[0][0]))
         
         
+    def open_folder(path):
+    # Asegúrate de que la ruta sea absoluta
+        path = os.path.abspath(path)
         
+        if os.name == 'nt':  # Windows
+            os.startfile(path)
+        elif os.name == 'posix':
+            try:
+                subprocess.Popen(['xdg-open', path])  # Linux
+            except FileNotFoundError:
+                subprocess.Popen(['open', path])  # macOS
+        else:
+            raise NotImplementedError(f'Unsupported OS: {os.name}')
 
     def __init__(self,ID = NONE):
         self.ID = ID
@@ -191,7 +228,8 @@ class CargaDocs(Toplevel):
         ruta_actual = os.getcwd()
         # Reemplaza las diagonales inversas por diagonales normales
         ruta_con_diagonales = ruta_actual.replace("\\", "/")+"/Imagenes"
-        
+
+
         ImgEscane_data=Image.open(ruta_con_diagonales+"/cara.png")
         ImgINE_data=Image.open(ruta_con_diagonales+"/INE.png")
         ImgCartaRec_data=Image.open(ruta_con_diagonales+"/CartaRec.png")
@@ -219,7 +257,8 @@ class CargaDocs(Toplevel):
         self.almacenador.pack_propagate(0)
         self.almacenador.pack(expand=True,side="bottom", fill="both")
         
-        self.LBFoto = CTkLabel(self.almacenador,bg_color="black",text="",height=114, width=114).place(x=150, y=23)
+        self.LBFoto = CTkLabel(self.almacenador,image="",bg_color="black",text="",height=114, width=114)
+        self.LBFoto.place(x=150, y=23)
         self.BTEscanear=CTkButton(master=self.almacenador  ,image=ImgEscane,text="Escanear rostro",anchor="e", fg_color="#4682A9", hover_color="#91C8E4", height=36, width=143, font=("Poppins", 16,"bold"),corner_radius=10,command= lambda: self.Escanear()).place(x=280,y=61)
         self.BTSubirINE=CTkButton(master=self.almacenador  ,image=ImgPDF,text="Subir documento",anchor="", fg_color="#4682A9", hover_color="#91C8E4", height=36, width=143, font=("Poppins", 16,"bold"),corner_radius=10,command=lambda: self.cargarDocs("INE")).place(x=450,y=147)
         self.BTSubirCartaRec=CTkButton(master=self.almacenador  ,image=ImgPDF,text="Subir documento",anchor="e", fg_color="#4682A9", hover_color="#91C8E4", height=36, width=143, font=("Poppins", 16,"bold"),corner_radius=10,command=lambda: self.cargarDocs("carta de recomendacion")).place(x=450,y=201)
@@ -256,11 +295,11 @@ class CargaDocs(Toplevel):
                         text_color="#4682A9", dropdown_text_color="#4682A9",
                         font=("Poppins",16,"bold"), corner_radius=0)
         self.ComBox.place(x=192,y=257)
-                
-        self.BTVis1=CTkButton(master=self.almacenador  ,image=ImgOjo,text="",anchor="e", fg_color="transparent", hover_color="#91C8E4", height=32, width=24, font=("Poppins", 16,"bold"),corner_radius=10).place(x=390,y=147)
-        self.BTVis2=CTkButton(master=self.almacenador  ,image=ImgOjo,text="",anchor="e", fg_color="transparent", hover_color="#91C8E4", height=32, width=24, font=("Poppins", 16,"bold"),corner_radius=10).place(x=390,y=201)
-        self.BTVis3=CTkButton(master=self.almacenador  ,image=ImgOjo,text="",anchor="e", fg_color="transparent", hover_color="#91C8E4", height=32, width=24, font=("Poppins", 16,"bold"),corner_radius=10).place(x=390,y=254)
-        self.BTVis4=CTkButton(master=self.almacenador  ,image=ImgOjo,text="",anchor="e", fg_color="transparent", hover_color="#91C8E4", height=32, width=24, font=("Poppins", 16,"bold"),corner_radius=10).place(x=390,y=305)
+        #print("documento: "+str(ejecutar_consulta(f"SELECT d.Ruta FROM Empleados e JOIN Relacion_EmpleadosDocumentos re ON e.IDEmpleados = re.IDEmpleados JOIN Documentos d ON re.IDDocumentos = d.IDDocumentos WHERE e.IDEmpleados = {ID} AND d.Tipo = 'INE' ")[0][0]))   
+        self.BTVis1=CTkButton(master=self.almacenador  ,image=ImgOjo,text="",anchor="e", fg_color="transparent", hover_color="#91C8E4", height=32, width=24, font=("Poppins", 16,"bold"),corner_radius=10,command= lambda: webbrowser.open(str(ejecutar_consulta(f"SELECT d.Ruta FROM Empleados e JOIN Relacion_EmpleadosDocumentos re ON e.IDEmpleados = re.IDEmpleados JOIN Documentos d ON re.IDDocumentos = d.IDDocumentos WHERE e.IDEmpleados = {ID} AND d.Tipo = 'INE' ")[0][0]))).place(x=390,y=147)
+        self.BTVis2=CTkButton(master=self.almacenador  ,image=ImgOjo,text="",anchor="e", fg_color="transparent", hover_color="#91C8E4", height=32, width=24, font=("Poppins", 16,"bold"),corner_radius=10,command= lambda: webbrowser.open(str(ejecutar_consulta(f"SELECT d.Ruta FROM Empleados e JOIN Relacion_EmpleadosDocumentos re ON e.IDEmpleados = re.IDEmpleados JOIN Documentos d ON re.IDDocumentos = d.IDDocumentos WHERE e.IDEmpleados = {ID} AND d.Tipo = 'Carta de recomendacion' ")[0][0]))).place(x=390,y=201)
+        self.BTVis3=CTkButton(master=self.almacenador  ,image=ImgOjo,text="",anchor="e", fg_color="transparent", hover_color="#91C8E4", height=32, width=24, font=("Poppins", 16,"bold"),corner_radius=10,command= lambda: webbrowser.open(str(ejecutar_consulta(f"SELECT d.Ruta FROM Empleados e JOIN Relacion_EmpleadosDocumentos re ON e.IDEmpleados = re.IDEmpleados JOIN Documentos d ON re.IDDocumentos = d.IDDocumentos WHERE e.IDEmpleados = {ID} AND d.Tipo = 'Curp' ")[0][0]))).place(x=390,y=254)
+        self.BTVis4=CTkButton(master=self.almacenador  ,image=ImgOjo,text="",anchor="e", fg_color="transparent", hover_color="#91C8E4", height=32, width=24, font=("Poppins", 16,"bold"),corner_radius=10,command= lambda: webbrowser.open(str(ejecutar_consulta(f"SELECT d.Ruta FROM Empleados e JOIN Relacion_EmpleadosDocumentos re ON e.IDEmpleados = re.IDEmpleados JOIN Documentos d ON re.IDDocumentos = d.IDDocumentos WHERE e.IDEmpleados = {ID} AND d.Tipo = 'Acta de nacimiento' ")[0][0]))).place(x=390,y=305)
 
 
         self.LBINE = CTkLabel(master=self.almacenador, text_color="#4682A9", text="INE", font=("Poppins", 20, "bold")).place(x=700, y=150)
@@ -371,14 +410,16 @@ class Empleados(Toplevel):
         
 
     def iniciartabla(self,id = None):
+        print(id)
         if id == None:
-            datos=[["Fecha","Hora de ingreso","Hora de salida","Retardo"],["NULL","NULL","NULL","NULL"]]
-            
+            datos=[["Fecha","Hora de ingreso","Hora de salida","Retardo"],["","","",""],["","","",""],["","","",""],["","","",""],["","","",""],["","","",""],["","","",""],["","","",""],["","","",""],["","","",""],["","","",""]]
             return datos
         else:
-            datos=[["Fecha","Hora de ingreso","Hora de salida","Retardo","s"]]
-            for fila in ejecutar_consulta(f"SELECT l.Fecha, l.Hora AS HoraIngreso, (SELECT Hora FROM LOGFechaHora l2 WHERE l2.IDEmpleados = l.IDEmpleados AND l2.Fecha = l.Fecha AND l2.Entrada = 0 LIMIT 1) AS HoraSalida, CASE WHEN TIMESTAMPDIFF(MINUTE, h.HoraEntrada, l.Hora) > 15 THEN 'Retardo' ELSE 'A tiempo' END AS Estado FROM LOGFechaHora l JOIN Empleados e ON l.IDEmpleados = e.IDEmpleados JOIN Horarios h ON e.IDHorario = h.IDHorario WHERE l.IDEmpleados = {id} AND l.Entrada = 1"):
-                datos.append(fila)
+            datos=[["Fecha","Hora de ingreso","Hora de salida","Retardo"]]
+           # for fila in ejecutar_consulta(f"SELECT l.Fecha, l.Hora AS HoraIngreso, (SELECT Hora FROM LOGFechaHora l2 WHERE l2.IDEmpleados = l.IDEmpleados AND l2.Fecha = l.Fecha AND l2.Entrada = 0 LIMIT 1) AS HoraSalida, CASE WHEN TIMESTAMPDIFF(MINUTE, h.HoraEntrada, l.Hora) > 15 THEN 'Retardo' ELSE 'A tiempo' END AS Estado FROM LOGFechaHora l JOIN Empleados e ON l.IDEmpleados = e.IDEmpleados JOIN Horarios h ON e.IDHorario = h.IDHorario WHERE l.IDEmpleados = {id}"):
+            #    datos.append(fila)
+            datos = datos + ejecutar_consulta(f"SELECT l.Fecha, l.Hora AS HoraIngreso, (SELECT Hora FROM LOGFechaHora l2 WHERE l2.IDEmpleados = l.IDEmpleados AND l2.Fecha = l.Fecha AND l2.Entrada = 0 LIMIT 1) AS HoraSalida, CASE WHEN TIMESTAMPDIFF(MINUTE, h.HoraEntrada, l.Hora) > 15 THEN 'Retardo' ELSE 'A tiempo' END AS Estado FROM LOGFechaHora l JOIN Empleados e ON l.IDEmpleados = e.IDEmpleados JOIN Horarios h ON e.IDHorario = h.IDHorario WHERE l.IDEmpleados = {str(id)}")
+            print(datos)
             return datos
         
 
@@ -402,6 +443,10 @@ class Empleados(Toplevel):
         EmpleadosVal = ejecutar_consulta("select idEmpleados,nombre,apellidop from empleados")
         EmpleadosVal_str = [str(item) for item in EmpleadosVal]
         self.ComBox.configure(values = EmpleadosVal_str)
+
+
+
+
     def __init__(self):
         super().__init__()
         EmpleadosVal = ()
@@ -416,11 +461,8 @@ class Empleados(Toplevel):
         x_pos = (ancho_pantalla - ancho_ventana) // 2
         y_pos = (alto_pantalla - alto_ventana) // 2
         self.geometry(f"{ancho_ventana}x{alto_ventana}+{x_pos}+{y_pos}")
-        self.resizable(0, 0)
-        #self.ventana.propagate(0)
-        #self.ventana.overrideredirect(True)  
+        self.resizable(0, 0) 
         ruta_actual = os.getcwd()
-        # Reemplaza las diagonales inversas por diagonales normales
         ruta_con_diagonales = ruta_actual.replace("\\", "/")+"/Imagenes"
         
         self.almacenador=CTkFrame(master=self,width=595,height=324,fg_color="#F6F4EB",corner_radius=0)
@@ -451,15 +493,7 @@ class Empleados(Toplevel):
                         text_color="#4682A9", dropdown_text_color="#4682A9",
                         font=("Poppins",16,"bold"), corner_radius=0,command=self.on_combobox_change)
         self.ComBox.place(x=386,y=48)
-        #self.ComBox.bind("<<ComboboxSelected>>", self.on_combobox_change)
-        
 
-        # datos=[
-        #     ["ID","Nombre","Apellido Paterno","Apellido Materno","Fecha","Hora de ingreso","Hora de salida"]
-        #     ]
-        # for fila in ejecutar_procedimiento("ConsultarEmpleadosConHorarios",()):
-        #     datos.append(fila) 
-        
         self.tablamarco=CTkScrollableFrame(master=self.almacenador,fg_color="transparent")
         self.tablamarco.pack(expand=True, fill="both", padx=20,pady=(170,0))
         self.tabla=CTkTable(master=self.tablamarco, values=self.iniciartabla(),colors=["#EEEEEE", "#EEEEEE"],header_color="#4682A9",text_color="#4682A9")
@@ -497,16 +531,28 @@ class UsuCon():
         if self.Des=="yes":
             self.ventana.quit()
             self.ventana.destroy()
+    
+    
+    
+    def LogEntrada(self):
+        print("Log inicio")
+        ide = Reconocer()
+        messagebox.showinfo("Facelink","Ingresado usuario: " + str(ejecutar_consulta(f"select nombre from empleados where idempleados = {ide}")[0][0]))
+        ejecutar_procedimiento("insertLOGfechahora",(ide,))
+
 
                 
 
     def Abrir(self):
         con = self.TxBoxCon.get()
         usuario = self.TxBoxUs.get()
-        if con == "PASWORD" and usuario == "Admin" or True:
+        if con == "PASSWORD" and usuario == "Admin" or True:
             self.ventana.quit()
             self.ventana.destroy()
-        Principal()
+            Principal()
+        else: 
+            messagebox.showinfo("Facelink","Error en los datos!")
+        
         #empleados_window = Empleados()
 #        self.ventana.iconify()
         #empleados_window.lift()
@@ -553,8 +599,16 @@ class UsuCon():
 
         self.botonSalir = CTkButton(master=self.almacenador, text="Salir", fg_color="#4682A9", hover_color="#91C8E4", height=40, width=117, font=("Poppins", 16),command=self.cerrar).place(x=48, y=447)
         
-        self.botonInfo = CTkButton(master=self.almacenador,text="?",anchor="e", fg_color="#4682A9", hover_color="#91C8E4", height=32, width=32, font=("Poppins", 32,"bold"),corner_radius=10)
+        self.botonInfo = CTkButton(master=self.almacenador,text="?",anchor="e", fg_color="#4682A9", hover_color="#91C8E4", height=32, width=32, font=("Poppins", 32,"bold"),corner_radius=10,command= lambda: webbrowser.open("https://online.publuu.com/570262/1280320"))
         self.botonInfo.place(x=1,y=1)
+
+
+
+        self.botonEscanear = CTkButton(master=self.almacenador,text="Escanear Entrada",anchor="e", fg_color="#4682A9", hover_color="#91C8E4", height=32, width=32, font=("Poppins", 32,"bold"),corner_radius=10,command= lambda: self.LogEntrada())
+        self.botonEscanear.place(x=80,y=1)
+        
+        
+        
         self.ventana.mainloop()
 
 

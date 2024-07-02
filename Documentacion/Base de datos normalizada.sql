@@ -24,7 +24,7 @@ CREATE TABLE Empleados (
 -- Creación de la tabla Documentos
 CREATE TABLE Documentos (
     IDDocumentos INT PRIMARY KEY AUTO_INCREMENT,
-    Tipo VARCHAR(20) NOT NULL,
+    Tipo VARCHAR(50) NOT NULL,
     Ruta VARCHAR(255) NOT NULL
 );  
 

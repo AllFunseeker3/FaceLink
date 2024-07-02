@@ -57,11 +57,12 @@ def Reconocer():
 				cv2.rectangle(frame, (x,y),(x+w,y+h),(0,0,255),2)
 			'''
 			# LBPHFace
-			if result[1] < 70:
+			if result[1] < 40:
 				cv2.putText(frame,'{}'.format("Hola "+imagePaths[result[0]]),(x,y-25),2,1.1,(0,255,0),1,cv2.LINE_AA)
 				cv2.rectangle(frame, (x,y),(x+w,y+h),(0,255,0),2)
-				ctypes.windll.user32.MessageBoxW(0,"Usuario:" + (imagePaths[result[0]] + " Reconocido"), "FaceLink", 0|32)
-				return imagePaths[result[0]]
+				print(str(imagePaths[result[0]]))
+				return str(imagePaths[result[0]])
+				lambda: cv2.destroyAllWindows()
 				#Autorizado = True
 
 			else:
@@ -76,4 +77,3 @@ def Reconocer():
 	cap.release()
 
 	cv2.destroyAllWindows()
-Reconocer()
